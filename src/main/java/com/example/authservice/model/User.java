@@ -9,9 +9,10 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users", catalog = "auth")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -42,6 +43,10 @@ public class User {
 
     @ElementCollection
     public List<String> roles = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "user_id")
+    private Set<Order> orders;
 
     public UserResponseDTO toUserResponseDTO() {
         return new UserResponseDTO(username, password, roles);
