@@ -16,9 +16,12 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    /*
     @GetMapping("get-user-by-username/{username}")
     public ResponseEntity<UserResponseDTO> getUserByUsername(@PathVariable String username) {
         User found = userService.findByUsername(username);
         return new ResponseEntity<>(found.toUserResponseDTO(), HttpStatus.OK);
     }
+
+     */
 }

@@ -12,10 +12,10 @@ import lombok.Setter;
 @Setter
 public class LoginDataDTO {
 
-    private String username;
+    private String email;
     private String password;
 
     public LoginData toLoginData() {
-        return new LoginData(username, password);
+        return new LoginData(email, password);
     }
 }

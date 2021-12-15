@@ -4,6 +4,6 @@ import com.example.authservice.model.User;
 
 public interface IUserService {
 
-    User findByUsernameAndPassword(String username, String password);
-    User findByUsername(String username);
+    User findByEmailAndPassword(String email, String password);
+    User findByEmail(String email);
 }
