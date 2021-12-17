@@ -21,4 +21,14 @@ public class UserService implements IUserService {
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
+
+    @Override
+    public User findByEmailOrPhoneNumber(String email, String phoneNumber) {
+        return userRepository.findByEmailOrPhoneNumber(email, phoneNumber);
+    }
+
+    @Override
+    public User saveOne(User user) {
+        return userRepository.save(user);
+    }
 }

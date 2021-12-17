@@ -14,7 +14,13 @@ import java.util.List;
 @Setter
 public class UserResponseDTO {
 
-    private String username;
+    private String email;
     private String password;
     private List<String> roles = new ArrayList<>();
+
+    public UserResponseDTO(String email, String password) {
+        this.email = email;
+        this.password = password;
+        roles.add("ROLE_USER");
+    }
 }

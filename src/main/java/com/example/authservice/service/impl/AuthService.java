@@ -1,18 +1,23 @@
 package com.example.authservice.service.impl;
 
+import com.example.authservice.exceptions.RegistrationFailException;
+import com.example.authservice.exceptions.UnauthenticatedException;
+import com.example.authservice.exceptions.UserAlreadyExistsException;
 import com.example.authservice.model.LoginData;
+import com.example.authservice.model.RegisterData;
+import com.example.authservice.model.User;
+import com.example.authservice.security.UserDetailsImpl;
+import com.example.authservice.security.jwt.JwtUtils;
 import com.example.authservice.service.IAuthService;
-import com.example.authservice.security.TokenUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -22,19 +27,42 @@ public class AuthService implements IAuthService {
     AuthenticationManager authenticationManager;
 
     @Autowired
-    TokenUtils tokenUtils;
+    JwtUtils jwtUtils;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    @Autowired
+    UserService userService;
 
     @Override
     public String login(LoginData loginData) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword())
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        User fromContext = (User) authentication.getPrincipal();
-        Set<GrantedAuthority> authorities = (Set<GrantedAuthority>) fromContext.getAuthorities();
-        for (GrantedAuthority authority : authorities) {
-            return tokenUtils.generateToken(loginData.getEmail(), authority.toString());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword())
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return jwtUtils.generateJwtToken(authentication);
+        } catch (Exception e) {
+            throw new UnauthenticatedException();
         }
-        return null;
+    }
+
+    @Override
+    public void register(RegisterData registerData) {
+        User alreadyRegistered = userService.findByEmailOrPhoneNumber(registerData.getEmail(), registerData.getPhoneNumber());
+        if (alreadyRegistered != null) {
+            throw new UserAlreadyExistsException();
+        }
+        User saved = userService.saveOne(new User(registerData.getEmail(), passwordEncoder.encode(registerData.getPassword()), registerData.getName(), registerData.getSurname(), registerData.getPhoneNumber(), registerData.getAddress()));
+        if (saved == null) {
+            throw new RegistrationFailException();
+        }
+    }
+
+    @Override
+    public UserDetailsImpl getUserDetails() {
+        return (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        //return (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }
