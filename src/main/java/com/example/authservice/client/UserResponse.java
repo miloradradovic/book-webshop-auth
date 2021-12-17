@@ -1,4 +1,4 @@
-package com.example.authservice.dto;
+package com.example.authservice.client;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,13 +12,13 @@ import java.util.List;
 @AllArgsConstructor
 @Getter
 @Setter
-public class UserResponseDTO {
+public class UserResponse {
 
     private String email;
     private String password;
     private List<String> roles = new ArrayList<>();
 
-    public UserResponseDTO(String email, String password) {
+    public UserResponse(String email, String password) {
         this.email = email;
         this.password = password;
         roles.add("ROLE_USER");

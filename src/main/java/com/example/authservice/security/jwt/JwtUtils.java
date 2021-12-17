@@ -1,6 +1,7 @@
 package com.example.authservice.security.jwt;
 
 import com.example.authservice.security.UserDetailsImpl;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,7 @@ public class JwtUtils {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
-        } catch (Exception e) {
+        } catch (ExpiredJwtException e) {
             e.printStackTrace();
         }
         return false;

@@ -32,7 +32,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy
                         (SessionCreationPolicy.STATELESS).and().authorizeRequests()
-                .antMatchers("/api/auth/user/**").permitAll()
+                .antMatchers("/api/auth/log-in", "/api/auth/register").permitAll()
                 .antMatchers("/api/auth/client/**").hasRole("USER")
                 .anyRequest().authenticated();
 

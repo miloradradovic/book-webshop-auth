@@ -20,7 +20,7 @@ public class RegisterDataDTO {
 
     @NotBlank(message = "Password can't be blank!")
     @Size(min = 8, max = 15, message = "Password's length must be at least 8!")
-    @Pattern(regexp = "[A-Z]+[a-z]+[0-9]+", message = "Password must contain at least one uppercase, one lowercase and one digit!")
+    @Pattern(regexp = "(?=(.*[0-9]))(?=.*[a-z])(?=(.*[A-Z]))(?=(.*)).{8,}", message = "Password must contain at least one uppercase, one lowercase and one digit!")
     private String password;
 
     @NotBlank(message = "Name can't be blank!")
