@@ -1,5 +1,6 @@
 package com.example.authservice.api;
 
+import com.example.authservice.client.UserDataResponse;
 import com.example.authservice.client.UserResponse;
 import com.example.authservice.dto.LoginDataDTO;
 import com.example.authservice.dto.RegisterDataDTO;
@@ -37,5 +38,10 @@ public class AuthController {
     public UserResponse getUserDetails() {
         UserDetailsImpl user = authService.getUserDetails();
         return new UserResponse(user.getUsername(), user.getPassword());
+    }
+
+    @GetMapping("client/get-current-user-data")
+    public UserDataResponse getUserData() {
+        return authService.getUserData();
     }
 }

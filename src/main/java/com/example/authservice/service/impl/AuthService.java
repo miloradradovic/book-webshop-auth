@@ -1,8 +1,10 @@
 package com.example.authservice.service.impl;
 
+import com.example.authservice.client.UserDataResponse;
 import com.example.authservice.exceptions.RegistrationFailException;
 import com.example.authservice.exceptions.UnauthenticatedException;
 import com.example.authservice.exceptions.UserAlreadyExistsException;
+import com.example.authservice.exceptions.UserNotFoundException;
 import com.example.authservice.model.LoginData;
 import com.example.authservice.model.RegisterData;
 import com.example.authservice.model.User;
@@ -64,5 +66,15 @@ public class AuthService implements IAuthService {
     public UserDetailsImpl getUserDetails() {
         return (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         //return (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    @Override
+    public UserDataResponse getUserData() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User found = userService.findByEmail(userDetails.getUsername());
+        if (found == null) {
+            throw new UserNotFoundException();
+        }
+        return new UserDataResponse(found.getAddress(), found.getPhoneNumber());
     }
 }
