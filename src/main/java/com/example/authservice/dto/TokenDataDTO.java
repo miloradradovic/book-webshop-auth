@@ -13,4 +13,8 @@ public class TokenDataDTO {
 
     private LoginDataDTO loginDataDTO;
     private String accessToken;
+
+    public TokenDataDTO(String token) {
+        this.accessToken = token;
+    }
 }

@@ -1,6 +1,7 @@
 package com.example.authservice.security.jwt;
 
 import com.example.authservice.security.UserDetailsImpl;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -25,7 +26,9 @@ public class JwtUtils {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
         } catch (ExpiredJwtException e) {
-            e.printStackTrace();
+            System.out.println("Expired");
+        } catch (Exception exception) {
+            exception.printStackTrace();
         }
         return false;
     }
@@ -39,7 +42,24 @@ public class JwtUtils {
                 setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() +
                         jwtExpirationMs))
+                .claim("role", "ROLE_USER")
                 .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
+    }
+
+    public String refreshToken(String accessToken) {
+        String refreshedToken;
+        try {
+            final Claims claims = this.getAllClaimsFromToken(accessToken);
+            claims.setIssuedAt(new Date());
+            refreshedToken = Jwts.builder()
+                    .setClaims(claims)
+                    .setExpiration(new Date((new Date()).getTime() +
+                            jwtExpirationMs))
+                    .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
+        } catch (Exception e) {
+            refreshedToken = null;
+        }
+        return refreshedToken;
     }
 
     public String getEmailFromJwtToken(String token) {
@@ -54,5 +74,18 @@ public class JwtUtils {
             return headerAuth.substring(7);
         }
         return null;
+    }
+
+    private Claims getAllClaimsFromToken(String token) {
+        Claims claims;
+        try {
+            claims = Jwts.parser()
+                    .setSigningKey(jwtSecret)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            claims = null;
+        }
+        return claims;
     }
 }

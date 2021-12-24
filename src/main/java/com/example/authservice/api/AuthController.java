@@ -28,6 +28,12 @@ public class AuthController {
         return new ResponseEntity<>(new TokenDataDTO(loginDataDTO, token), HttpStatus.OK);
     }
 
+    @PostMapping("refresh")
+    public ResponseEntity<TokenDataDTO> refreshToken(@RequestBody TokenDataDTO tokenDataDTO) {
+        String token = authService.refreshToken(tokenDataDTO.getAccessToken());
+        return new ResponseEntity<>(new TokenDataDTO(token), HttpStatus.OK);
+    }
+
     @PostMapping("register")
     public ResponseEntity<?> register(@RequestBody @Valid RegisterDataDTO registerDataDTO) {
         authService.register(registerDataDTO.toEntity());

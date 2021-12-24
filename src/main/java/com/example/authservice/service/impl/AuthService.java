@@ -1,10 +1,7 @@
 package com.example.authservice.service.impl;
 
 import com.example.authservice.client.UserDataResponse;
-import com.example.authservice.exceptions.RegistrationFailException;
-import com.example.authservice.exceptions.UnauthenticatedException;
-import com.example.authservice.exceptions.UserAlreadyExistsException;
-import com.example.authservice.exceptions.UserNotFoundException;
+import com.example.authservice.exceptions.*;
 import com.example.authservice.model.LoginData;
 import com.example.authservice.model.RegisterData;
 import com.example.authservice.model.User;
@@ -15,12 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
 
 @Service
 public class AuthService implements IAuthService {
@@ -48,6 +42,15 @@ public class AuthService implements IAuthService {
         } catch (Exception e) {
             throw new UnauthenticatedException();
         }
+    }
+
+    @Override
+    public String refreshToken(String accessToken) {
+        String newToken = jwtUtils.refreshToken(accessToken);
+        if (newToken == null) {
+            throw new RefreshTokenFailException();
+        }
+        return newToken;
     }
 
     @Override

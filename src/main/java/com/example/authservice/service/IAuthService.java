@@ -11,4 +11,5 @@ public interface IAuthService {
     void register(RegisterData registerData);
     UserDetailsImpl getUserDetails();
     UserDataResponse getUserData();
+    String refreshToken(String accessToken);
 }
