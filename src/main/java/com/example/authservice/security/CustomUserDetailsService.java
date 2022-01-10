@@ -21,13 +21,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User found = userService.findByEmail(email);
-        if (found == null) {
+        try {
+            User found = userService.getByEmailThrowsException(email);
+            List<GrantedAuthority> grantedAuthorities = found.getRoles()
+                    .stream().map(SimpleGrantedAuthority::new)
+                    .collect(Collectors.toList());
+            return new UserDetailsImpl(found.getEmail(), found.getPassword(), grantedAuthorities);
+        } catch (Exception e) {
             throw new UsernameNotFoundException("No user found!");
         }
-        List<GrantedAuthority> grantedAuthorities = found.getRoles()
-                .stream().map(SimpleGrantedAuthority::new)
-                .collect(Collectors.toList());
-        return new UserDetailsImpl(found.getEmail(), found.getPassword(), grantedAuthorities);
     }
 }

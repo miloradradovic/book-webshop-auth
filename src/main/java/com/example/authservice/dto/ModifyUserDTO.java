@@ -1,4 +1,4 @@
-package com.example.authservice.model;
+package com.example.authservice.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,13 +9,13 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class RegisterData {
+public class ModifyUserDTO {
 
+    private int id;
     private String email;
     private String password;
     private String name;
     private String surname;
     private String phoneNumber;
     private String address;
-
 }

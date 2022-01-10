@@ -1,6 +1,5 @@
 package com.example.authservice.dto;
 
-import com.example.authservice.model.RegisterData;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,7 +36,5 @@ public class RegisterDataDTO {
     @NotBlank(message = "Address can't be blank!")
     private String address;
 
-    public RegisterData toEntity() {
-        return new RegisterData(email, password, name, surname, phoneNumber, address);
-    }
+    private String roleType;
 }

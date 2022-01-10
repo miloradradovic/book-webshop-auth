@@ -9,12 +9,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class UserDataResponse {
+public class UserDataResponseDTO {
 
     private String address;
     private String phoneNumber;
-
-    public UserDataResponseDTO toDTO() {
-        return new UserDataResponseDTO(address, phoneNumber);
-    }
 }

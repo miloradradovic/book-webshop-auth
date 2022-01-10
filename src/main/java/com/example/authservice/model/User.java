@@ -42,13 +42,23 @@ public class User {
     @ElementCollection(fetch = FetchType.EAGER)
     public List<String> roles = new ArrayList<>();
 
-    public User(String email, String password, String name, String surname, String phoneNumber, String address) {
+    public User(String email, String password, String name, String surname, String phoneNumber, String address, String userType) {
         this.email = email;
         this.password = password;
         this.name = name;
         this.surname = surname;
         this.phoneNumber = phoneNumber;
         this.address = address;
-        this.roles.add("ROLE_USER");
+        this.roles.add(userType);
+    }
+
+    public User(int id, String email, String password, String name, String surname, String phoneNumber, String address) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.name = name;
+        this.surname = surname;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
     }
 }

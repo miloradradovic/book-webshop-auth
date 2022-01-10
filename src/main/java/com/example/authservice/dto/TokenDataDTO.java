@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class TokenDataDTO {
 
-    private LoginDataDTO loginDataDTO;
+    private String email;
     private String accessToken;
 
     public TokenDataDTO(String token) {

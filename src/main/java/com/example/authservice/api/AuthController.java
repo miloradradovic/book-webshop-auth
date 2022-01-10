@@ -1,18 +1,20 @@
 package com.example.authservice.api;
 
-import com.example.authservice.client.UserDataResponse;
-import com.example.authservice.client.UserResponse;
 import com.example.authservice.dto.LoginDataDTO;
 import com.example.authservice.dto.RegisterDataDTO;
 import com.example.authservice.dto.TokenDataDTO;
-import com.example.authservice.security.UserDetailsImpl;
+import com.example.authservice.dto.UserDTO;
+import com.example.authservice.mapper.UserMapper;
+import com.example.authservice.model.User;
 import com.example.authservice.service.impl.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.security.PermitAll;
 import javax.validation.Valid;
 
 @RestController
@@ -22,10 +24,13 @@ public class AuthController {
     @Autowired
     AuthService authService;
 
+    @Autowired
+    UserMapper userMapper;
+
     @PostMapping("log-in")
     public ResponseEntity<TokenDataDTO> login(@RequestBody @Valid LoginDataDTO loginDataDTO) {
-        String token = authService.login(loginDataDTO.toLoginData());
-        return new ResponseEntity<>(new TokenDataDTO(loginDataDTO, token), HttpStatus.OK);
+        String token = authService.login(userMapper.toLoginData(loginDataDTO));
+        return new ResponseEntity<>(new TokenDataDTO(loginDataDTO.getEmail(), token), HttpStatus.OK);
     }
 
     @PostMapping("refresh")
@@ -35,19 +40,8 @@ public class AuthController {
     }
 
     @PostMapping("register")
-    public ResponseEntity<?> register(@RequestBody @Valid RegisterDataDTO registerDataDTO) {
-        authService.register(registerDataDTO.toEntity());
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @GetMapping("client/get-user-details")
-    public UserResponse getUserDetails() {
-        UserDetailsImpl user = authService.getUserDetails();
-        return new UserResponse(user.getUsername(), user.getPassword());
-    }
-
-    @GetMapping("client/get-current-user-data")
-    public UserDataResponse getUserData() {
-        return authService.getUserData();
+    public ResponseEntity<UserDTO> register(@RequestBody @Valid RegisterDataDTO registerDataDTO) {
+        User registered = authService.register(userMapper.toUser(registerDataDTO));
+        return new ResponseEntity<>(userMapper.toUserDTO(registered), HttpStatus.OK);
     }
 }

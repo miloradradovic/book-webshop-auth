@@ -1,9 +1,7 @@
 package com.example.authservice.service.impl;
 
-import com.example.authservice.client.UserDataResponse;
 import com.example.authservice.exceptions.*;
 import com.example.authservice.model.LoginData;
-import com.example.authservice.model.RegisterData;
 import com.example.authservice.model.User;
 import com.example.authservice.security.UserDetailsImpl;
 import com.example.authservice.security.jwt.JwtUtils;
@@ -54,30 +52,21 @@ public class AuthService implements IAuthService {
     }
 
     @Override
-    public void register(RegisterData registerData) {
-        User alreadyRegistered = userService.findByEmailOrPhoneNumber(registerData.getEmail(), registerData.getPhoneNumber());
+    public User register(User toRegister) {
+        User alreadyRegistered = userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
         if (alreadyRegistered != null) {
             throw new UserAlreadyExistsException();
         }
-        User saved = userService.saveOne(new User(registerData.getEmail(), passwordEncoder.encode(registerData.getPassword()), registerData.getName(), registerData.getSurname(), registerData.getPhoneNumber(), registerData.getAddress()));
-        if (saved == null) {
+        toRegister.setPassword(passwordEncoder.encode(toRegister.getPassword()));
+        try {
+            return userService.createThrowsException(toRegister);
+        } catch (Exception e) {
             throw new RegistrationFailException();
         }
     }
 
     @Override
-    public UserDetailsImpl getUserDetails() {
+    public UserDetailsImpl getCurrentlyLoggedIn() {
         return (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        //return (org.springframework.security.core.userdetails.User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    }
-
-    @Override
-    public UserDataResponse getUserData() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User found = userService.findByEmail(userDetails.getUsername());
-        if (found == null) {
-            throw new UserNotFoundException();
-        }
-        return new UserDataResponse(found.getAddress(), found.getPhoneNumber());
     }
 }
