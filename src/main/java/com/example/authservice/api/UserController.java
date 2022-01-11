@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -36,14 +37,14 @@ public class UserController {
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<UserDTO> create(@RequestBody RegisterDataDTO registerDataDTO) {
+    public ResponseEntity<UserDTO> create(@RequestBody @Valid RegisterDataDTO registerDataDTO) {
         User created = userService.createThrowsException(userMapper.toUser(registerDataDTO));
         return new ResponseEntity<>(userMapper.toUserDTO(created), HttpStatus.CREATED);
     }
 
     @PutMapping("/edit/{userId}")
     @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_USER')")
-    public ResponseEntity<UserDTO> edit(@RequestBody ModifyUserDTO modifyUserDTO, @PathVariable int userId) {
+    public ResponseEntity<UserDTO> edit(@RequestBody @Valid ModifyUserDTO modifyUserDTO, @PathVariable int userId) {
         modifyUserDTO.setId(userId);
         User edited = userService.edit(userMapper.toUser(modifyUserDTO));
         return new ResponseEntity<>(userMapper.toUserDTO(edited), HttpStatus.OK);

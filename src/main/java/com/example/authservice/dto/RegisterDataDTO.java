@@ -36,5 +36,6 @@ public class RegisterDataDTO {
     @NotBlank(message = "Address can't be blank!")
     private String address;
 
+    @NotBlank(message = "Role can't be blank!")
     private String roleType;
 }
