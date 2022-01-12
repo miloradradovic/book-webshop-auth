@@ -10,7 +10,7 @@ public interface IUserService {
     User getByEmailAndPassword(String email, String password);
     User getByEmail(String email);
     User getByEmailThrowsException(String email);
-    User getByEmailOrPhoneNumber(String email, String phoneNumber);
+    List<User> getByEmailOrPhoneNumber(String email, String phoneNumber);
     User create(User user);
     User createThrowsException(User user);
     UserDataResponse getDataForOrder();

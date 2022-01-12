@@ -43,7 +43,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User getByEmailOrPhoneNumber(String email, String phoneNumber) {
+    public List<User> getByEmailOrPhoneNumber(String email, String phoneNumber) {
         return userRepository.findByEmailOrPhoneNumber(email, phoneNumber);
     }
 
@@ -54,7 +54,7 @@ public class UserService implements IUserService {
 
     @Override
     public User createThrowsException(User user) {
-        if (getByEmailOrPhoneNumber(user.getEmail(), user.getPhoneNumber()) != null) {
+        if (getByEmailOrPhoneNumber(user.getEmail(), user.getPhoneNumber()).size() != 0) {
             throw new UserAlreadyExistsException();
         }
         User created = create(user);
