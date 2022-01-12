@@ -19,10 +19,10 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import javax.annotation.PostConstruct;
-import java.nio.charset.StandardCharsets;
 
 import static org.mockito.BDDMockito.given;
 import static org.hamcrest.core.Is.is;
@@ -38,11 +38,6 @@ public class AuthControllerUnitTests {
 
     @Mock
     private UserMapper userMapper;
-
-    private final MediaType contentType = new MediaType(
-            MediaType.APPLICATION_JSON.getType(),
-            MediaType.APPLICATION_JSON.getSubtype(),
-            StandardCharsets.UTF_8);
 
     @Mock
     private AuthService authService;
@@ -91,9 +86,9 @@ public class AuthControllerUnitTests {
     }
 
     @Test
-    @Rollback
+    @Transactional
     public void registerSuccess() throws Exception {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOSuccess();
+        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOSuccessUser();
         User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
         User registered = TestUtils.generateRegisteredUser(toRegister);
 
