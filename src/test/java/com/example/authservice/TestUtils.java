@@ -8,6 +8,8 @@ import com.example.authservice.security.UserDetailsImpl;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.ArrayList;
@@ -93,7 +95,7 @@ public class TestUtils {
     }
 
     public static ModifyUserDTO generateModifyUserDTOSuccess() {
-        return new ModifyUserDTO(-1, "email1@email.com", "dummypassword", "Name", "Surname", "Phone44", "Changed address");
+        return new ModifyUserDTO(1, "email1@email.com", "dummypassword", "Name", "Surname", "Phone44", "Changed address");
     }
 
     public static User generateUserToEdit(ModifyUserDTO modifyUserDTO) {
@@ -141,6 +143,9 @@ public class TestUtils {
     public static User generateUserFoundById(int userId) {
         User user = new User();
         user.setId(userId);
+        user.setPassword("$10$Gce/AEiSA4gNRe6280j4J.TBplRJefFpcrvDTicr7TduP/MTx.Es6");
+        user.setRoles(new ArrayList<>());
+        user.getRoles().add("ROLE_USER");
         return user;
     }
 
@@ -168,6 +173,85 @@ public class TestUtils {
         return users;
     }
 
+    public static Authentication generateAuthentication(LoginData loginData) {
+        return new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword());
+    }
 
-    // TODO implement generating methods for tests
+    public static String generateNewJwtToken() {
+        return "new valid token";
+    }
+
+    public static String generateInvalidJwtToken() {
+        return "invalid jwt token";
+    }
+
+    public static String generateEncodedPassword() {
+        return "encoded password";
+    }
+
+    public static List<User> generateFoundUserList() {
+        List<User> users = new ArrayList<>();
+        User user = new User();
+        users.add(user);
+        return users;
+    }
+
+    public static String generateValidEmail() {
+        return "valid email";
+    }
+
+    public static String generateValidPassword() {
+        return "valid password";
+    }
+
+    public static User generateUserFoundByEmailAndPassword(String email, String password) {
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(password);
+        return user;
+    }
+
+    public static String generateInvalidEmail() {
+        return "invalid email";
+    }
+
+    public static String generateInvalidPassword() {
+        return "invalid password";
+    }
+
+    public static User generateUserFoundByEmail(String email) {
+        User user = new User();
+        user.setEmail(email);
+        return user;
+    }
+
+    public static String generateValidPhoneNumber() {
+        return "valid phone number";
+    }
+
+    public static List<User> generateFoundUserByEmailOrPhoneList(String email, String phone) {
+        List<User> users = new ArrayList<>();
+        User user = new User();
+        user.setEmail(email);
+        user.setPhoneNumber(phone);
+        users.add(user);
+        return users;
+    }
+
+    public static String generateInvalidPhoneNumber() {
+        return "invalid phone number";
+    }
+
+    public static User generateUserForDataResponse(UserDataResponse response) {
+        User user = new User();
+        user.setAddress(response.getAddress());
+        user.setPhoneNumber(response.getPhoneNumber());
+        return user;
+    }
+
+    public static User generateUserFoundByPhone(String phoneNumber) {
+        User user = new User();
+        user.setPhoneNumber(phoneNumber);
+        return user;
+    }
 }

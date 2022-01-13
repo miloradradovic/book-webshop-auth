@@ -2,21 +2,24 @@ package com.example.authservice.api;
 
 import com.example.authservice.TestUtils;
 import com.example.authservice.client.UserDataResponse;
-import com.example.authservice.dto.ModifyUserDTO;
-import com.example.authservice.dto.RegisterDataDTO;
-import com.example.authservice.dto.UserDTO;
+import com.example.authservice.dto.*;
 import com.example.authservice.exceptions.UserAlreadyExistsException;
 import com.example.authservice.exceptions.UserNotFoundException;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
 import com.example.authservice.security.UserDetailsImpl;
+import com.example.authservice.service.impl.AuthService;
 import com.example.authservice.service.impl.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -47,6 +50,9 @@ public class UserControllerUnitTests {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private AuthService authService;
 
     @Autowired
     private WebApplicationContext webApplicationContext;
