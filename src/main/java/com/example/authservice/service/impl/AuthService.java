@@ -14,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AuthService implements IAuthService {
 
@@ -36,7 +38,8 @@ public class AuthService implements IAuthService {
                     new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return jwtUtils.generateJwtToken(authentication);
+            String json = jwtUtils.generateJwtToken(authentication);
+            return json;
         } catch (Exception e) {
             throw new UnauthenticatedException();
         }
@@ -53,8 +56,8 @@ public class AuthService implements IAuthService {
 
     @Override
     public User register(User toRegister) {
-        User alreadyRegistered = userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
-        if (alreadyRegistered != null) {
+        List<User> alreadyRegistered = userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        if (alreadyRegistered.size() != 0) {
             throw new UserAlreadyExistsException();
         }
         toRegister.setPassword(passwordEncoder.encode(toRegister.getPassword()));

@@ -12,6 +12,7 @@ import com.example.authservice.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -43,7 +44,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User getByEmailOrPhoneNumber(String email, String phoneNumber) {
+    public List<User> getByEmailOrPhoneNumber(String email, String phoneNumber) {
         return userRepository.findByEmailOrPhoneNumber(email, phoneNumber);
     }
 
@@ -54,7 +55,8 @@ public class UserService implements IUserService {
 
     @Override
     public User createThrowsException(User user) {
-        if (getByEmailOrPhoneNumber(user.getEmail(), user.getPhoneNumber()) != null) {
+        List<User> found = getByEmailOrPhoneNumber(user.getEmail(), user.getPhoneNumber());
+        if (found.size() != 0) {
             throw new UserAlreadyExistsException();
         }
         User created = create(user);
@@ -73,7 +75,7 @@ public class UserService implements IUserService {
 
     @Override
     public User getById(int userId) {
-        return userRepository.findById(userId).orElse(null);
+        return userRepository.findById(userId);
     }
 
     @Override
@@ -108,6 +110,7 @@ public class UserService implements IUserService {
         found.setName(toEdit.getName());
         found.setSurname(toEdit.getSurname());
         found.setPhoneNumber(toEdit.getPhoneNumber());
+
         return userRepository.save(found);
     }
 
