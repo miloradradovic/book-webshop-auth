@@ -1,7 +1,5 @@
 package com.example.authservice.service;
 
-import com.example.authservice.TestUtils;
-import com.example.authservice.dto.RegisterDataDTO;
 import com.example.authservice.exceptions.RefreshTokenFailException;
 import com.example.authservice.exceptions.UnauthenticatedException;
 import com.example.authservice.exceptions.UserAlreadyExistsException;
@@ -18,7 +16,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -67,21 +64,24 @@ public class AuthServiceUnitTests {
 
     @Test
     public void loginSuccess() {
-        LoginData loginData = TestUtils.generateLoginDataSuccess();
-        Authentication auth = TestUtils.generateAuthentication(loginData);
-        UserDetailsImpl userDetails = TestUtils.generateUserDetailsRoleUser();
+        LoginData loginData = ServiceTestUtils.generateLoginDataSuccess();
+        Authentication toAuthenticate = ServiceTestUtils.generateAuthentication(loginData);
+        UserDetailsImpl userDetails = ServiceTestUtils.generateUserDetails();
+        Authentication authenticated = ServiceTestUtils.generateAuthentication(userDetails);
+        String jwtToken = ServiceTestUtils.generateJwtToken();
 
-        given(authenticationManager.authenticate(auth)).willReturn(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
-        given(jwtUtils.generateJwtToken(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()))).willReturn("dummytoken");
+        given(authenticationManager.authenticate(toAuthenticate)).willReturn(authenticated);
+        given(jwtUtils.generateJwtToken(authenticated)).willReturn(jwtToken);
 
         String jwt = authService.login(loginData);
+        assertEquals(jwtToken, jwt);
         assertNotNull(jwt);
     }
 
     @Test(expected = UnauthenticatedException.class)
     public void loginFail() {
-        LoginData loginData = TestUtils.generateLoginDataBadCredentials();
-        Authentication auth = TestUtils.generateAuthentication(loginData);
+        LoginData loginData = ServiceTestUtils.generateLoginDataBadCredentials();
+        Authentication auth = ServiceTestUtils.generateAuthentication(loginData);
 
         given(authenticationManager.authenticate(auth)).willThrow(UnauthenticatedException.class);
 
@@ -90,8 +90,8 @@ public class AuthServiceUnitTests {
 
     @Test
     public void refreshTokenSuccess() {
-        String expiredToken = TestUtils.generateJwtToken();
-        String newToken = TestUtils.generateNewJwtToken();
+        String expiredToken = ServiceTestUtils.generateJwtToken();
+        String newToken = ServiceTestUtils.generateNewJwtToken();
 
         given(jwtUtils.refreshToken(expiredToken)).willReturn(newToken);
 
@@ -101,7 +101,7 @@ public class AuthServiceUnitTests {
 
     @Test(expected = RefreshTokenFailException.class)
     public void refreshTokenFail() {
-        String expiredToken = TestUtils.generateInvalidJwtToken();
+        String expiredToken = ServiceTestUtils.generateInvalidJwtToken();
 
         given(jwtUtils.refreshToken(expiredToken)).willReturn(null);
         authService.refreshToken(expiredToken);
@@ -110,12 +110,12 @@ public class AuthServiceUnitTests {
     @Test
     @Transactional
     public void registerSuccess() {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOSuccessUser();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        User registered = TestUtils.generateRegisteredUser(toRegister);
+        User toRegister = ServiceTestUtils.generateUserToRegisterSuccess("ROLE_USER");
+        User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
+        String encodedPass = ServiceTestUtils.generateEncodedPassword(toRegister.getPassword());
 
         given(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).willReturn(new ArrayList<>());
-        given(passwordEncoder.encode(toRegister.getPassword())).willReturn(TestUtils.generateEncodedPassword());
+        given(passwordEncoder.encode(toRegister.getPassword())).willReturn(encodedPass);
         given(userService.createThrowsException(toRegister)).willReturn(registered);
 
         User success = authService.register(toRegister);
@@ -124,9 +124,8 @@ public class AuthServiceUnitTests {
 
     @Test(expected = UserAlreadyExistsException.class)
     public void registerFailEmail() {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailEmail();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        List<User> foundUsers = TestUtils.generateFoundUserList();
+        User toRegister = ServiceTestUtils.generateUserToRegisterFailEmail("ROLE_USER");
+        List<User> foundUsers = ServiceTestUtils.generateUserListFoundByEmail(toRegister.getEmail());
 
         given(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).willReturn(foundUsers);
         authService.register(toRegister);
@@ -134,9 +133,8 @@ public class AuthServiceUnitTests {
 
     @Test(expected = UserAlreadyExistsException.class)
     public void registerFailPhoneNumber() {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailPhoneNumber();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        List<User> foundUsers = TestUtils.generateFoundUserList();
+        User toRegister = ServiceTestUtils.generateUserToRegisterFailPhoneNumber("ROLE_USER");
+        List<User> foundUsers = ServiceTestUtils.generateUserListFoundByPhoneNumber(toRegister.getPhoneNumber());
 
         given(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).willReturn(foundUsers);
         authService.register(toRegister);
@@ -144,9 +142,8 @@ public class AuthServiceUnitTests {
 
     @Test(expected = UserAlreadyExistsException.class)
     public void registerFailEmailAndPhoneNumber() {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailEmailAndPhoneNumber();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        List<User> foundUsers = TestUtils.generateFoundUserList();
+        User toRegister = ServiceTestUtils.generateUserToRegisterFailEmailAndPhoneNumber("ROLE_USER");
+        List<User> foundUsers = ServiceTestUtils.generateUserListFoundByEmailAndPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
 
         given(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).willReturn(foundUsers);
         authService.register(toRegister);

@@ -25,6 +25,10 @@ public class TestUtils {
         return mapper.writeValueAsString(obj);
     }
 
+
+    // ================================
+    // CONTROLLER UTILS
+
     public static LoginDataDTO generateLoginDataDTOSuccess() {
         return new LoginDataDTO("email1@email.com", "123qweASD");
     }

@@ -1,11 +1,7 @@
 package com.example.authservice.service;
 
-import com.example.authservice.TestUtils;
 import com.example.authservice.client.UserDataResponse;
-import com.example.authservice.dto.ModifyUserDTO;
-import com.example.authservice.dto.RegisterDataDTO;
 import com.example.authservice.exceptions.CreateUserFailException;
-import com.example.authservice.exceptions.DeleteUserFailException;
 import com.example.authservice.exceptions.UserAlreadyExistsException;
 import com.example.authservice.exceptions.UserNotFoundException;
 import com.example.authservice.model.User;
@@ -60,9 +56,9 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailAndPasswordSuccess() {
-        String email = TestUtils.generateValidEmail();
-        String password = TestUtils.generateValidPassword();
-        User found = TestUtils.generateUserFoundByEmailAndPassword(email, password);
+        String email = ServiceTestUtils.generateValidEmail();
+        String password = ServiceTestUtils.generateValidPassword();
+        User found = ServiceTestUtils.generateUserFoundByEmailAndPassword(email, password);
 
         given(userRepository.findByEmailAndPassword(email, password)).willReturn(found);
 
@@ -72,8 +68,8 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailAndPasswordReturnsNull() {
-        String email = TestUtils.generateInvalidEmail();
-        String password = TestUtils.generateInvalidPassword();
+        String email = ServiceTestUtils.generateInvalidEmail();
+        String password = ServiceTestUtils.generateInvalidPassword();
 
         given(userRepository.findByEmailAndPassword(email, password)).willReturn(null);
 
@@ -83,8 +79,8 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailSuccess() {
-        String email = TestUtils.generateValidEmail();
-        User found = TestUtils.generateUserFoundByEmail(email);
+        String email = ServiceTestUtils.generateValidEmail();
+        User found = ServiceTestUtils.generateUserFoundByEmail(email);
 
         given(userRepository.findByEmail(email)).willReturn(found);
 
@@ -94,7 +90,7 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailReturnsNull() {
-        String email = TestUtils.generateInvalidEmail();
+        String email = ServiceTestUtils.generateInvalidEmail();
 
         given(userRepository.findByEmail(email)).willReturn(null);
 
@@ -104,8 +100,8 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailThrowsExceptionSuccess() {
-        String email = TestUtils.generateValidEmail();
-        User found = TestUtils.generateUserFoundByEmail(email);
+        String email = ServiceTestUtils.generateValidEmail();
+        User found = ServiceTestUtils.generateUserFoundByEmail(email);
 
         given(userService.getByEmail(email)).willReturn(found);
 
@@ -115,7 +111,7 @@ public class UserServiceUnitTests {
 
     @Test(expected = UserNotFoundException.class)
     public void getByEmailThrowsExceptionFail() {
-        String email = TestUtils.generateInvalidEmail();
+        String email = ServiceTestUtils.generateInvalidEmail();
 
         given(userService.getByEmail(email)).willReturn(null);
         userService.getByEmailThrowsException(email);
@@ -123,9 +119,9 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailOrPhoneNumberSuccess() {
-        String email = TestUtils.generateValidEmail();
-        String phone = TestUtils.generateValidPhoneNumber();
-        List<User> found = TestUtils.generateFoundUserByEmailOrPhoneList(email, phone);
+        String email = ServiceTestUtils.generateValidEmail();
+        String phone = ServiceTestUtils.generateValidPhoneNumber();
+        List<User> found = ServiceTestUtils.generateUserListFoundByEmailOrPhoneNumber(email, phone);
 
         given(userRepository.findByEmailOrPhoneNumber(email, phone)).willReturn(found);
 
@@ -136,8 +132,8 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailOrPhoneNumberReturnsEmpty() {
-        String email = TestUtils.generateInvalidEmail();
-        String phone = TestUtils.generateInvalidPhoneNumber();
+        String email = ServiceTestUtils.generateInvalidEmail();
+        String phone = ServiceTestUtils.generateInvalidPhoneNumber();
 
         given(userRepository.findByEmailOrPhoneNumber(email, phone)).willReturn(new ArrayList<>());
 
@@ -148,9 +144,8 @@ public class UserServiceUnitTests {
     @Test
     @Transactional
     public void createUserSuccess() {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOSuccessUser();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        User registered = TestUtils.generateRegisteredUser(toRegister);
+        User toRegister = ServiceTestUtils.generateUserToRegisterSuccess("ROLE_USER");
+        User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
 
         given(userRepository.save(toRegister)).willReturn(registered);
 
@@ -161,9 +156,8 @@ public class UserServiceUnitTests {
     @Test
     @Transactional
     public void createAdminSuccess() {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOSuccessAdmin();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        User registered = TestUtils.generateRegisteredUser(toRegister);
+        User toRegister = ServiceTestUtils.generateUserToRegisterSuccess("ROLE_ADMIN");
+        User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
 
         given(userRepository.save(toRegister)).willReturn(registered);
 
@@ -174,11 +168,10 @@ public class UserServiceUnitTests {
     @Test
     @Transactional
     public void createThrowsExceptionSuccess() {
-        String email = TestUtils.generateValidEmail();
-        String phoneNumber = TestUtils.generateValidPhoneNumber();
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOSuccessUser();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        User registered = TestUtils.generateRegisteredUser(toRegister);
+        String email = ServiceTestUtils.generateInvalidEmail();
+        String phoneNumber = ServiceTestUtils.generateInvalidPhoneNumber();
+        User toRegister = ServiceTestUtils.generateUserToRegisterSuccess("ROLE_USER");
+        User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
 
         given(userService.getByEmailOrPhoneNumber(email, phoneNumber)).willReturn(new ArrayList<>());
         given(userService.create(toRegister)).willReturn(registered);
@@ -187,13 +180,12 @@ public class UserServiceUnitTests {
         assertEquals(registered.getEmail(), result.getEmail());
     }
 
-    @Test(expected = CreateUserFailException.class)
+    @Test(expected = UserAlreadyExistsException.class)
     public void createThrowsExceptionFailEmail() {
-        String email = TestUtils.generateInvalidEmail();
-        String phoneNumber = TestUtils.generateValidPhoneNumber();
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailEmail();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        List<User> users = TestUtils.generateFoundUserByEmailOrPhoneList(email, phoneNumber);
+        String email = ServiceTestUtils.generateValidEmail();
+        String phoneNumber = ServiceTestUtils.generateInvalidPhoneNumber();
+        User toRegister = ServiceTestUtils.generateUserToRegisterFailEmail("ROLE_USER");
+        List<User> users = ServiceTestUtils.generateUserListFoundByEmail(email);
 
         given(userRepository.findByEmailOrPhoneNumber(email, phoneNumber)).willReturn(users);
         given(userService.getByEmailOrPhoneNumber(email, phoneNumber)).willReturn(users);
@@ -203,24 +195,22 @@ public class UserServiceUnitTests {
 
     @Test(expected = CreateUserFailException.class)
     public void createThrowsExceptionFailPhoneNumber() {
-        String email = TestUtils.generateValidEmail();
-        String phoneNumber = TestUtils.generateInvalidPhoneNumber();
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailPhoneNumber();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        List<User> users = TestUtils.generateFoundUserByEmailOrPhoneList(email, phoneNumber);
+        String email = ServiceTestUtils.generateInvalidEmail();
+        String phoneNumber = ServiceTestUtils.generateInvalidPhoneNumber();
+        User toRegister = ServiceTestUtils.generateUserToRegisterFailPhoneNumber("ROLE_USER");
+        List<User> users = ServiceTestUtils.generateUserListFoundByPhoneNumber(phoneNumber);
 
         given(userService.getByEmailOrPhoneNumber(email, phoneNumber)).willReturn(users);
 
         userService.createThrowsException(toRegister);
     }
 
-    @Test(expected = CreateUserFailException.class)
+    @Test(expected = UserAlreadyExistsException.class)
     public void createThrowsExceptionFailEmailAndPhoneNumber() {
-        String email = TestUtils.generateInvalidEmail();
-        String phoneNumber = TestUtils.generateInvalidPhoneNumber();
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailEmailAndPhoneNumber();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        List<User> users = TestUtils.generateFoundUserByEmailOrPhoneList(email, phoneNumber);
+        String email = ServiceTestUtils.generateValidEmail();
+        String phoneNumber = ServiceTestUtils.generateValidPhoneNumber();
+        User toRegister = ServiceTestUtils.generateUserToRegisterFailEmailAndPhoneNumber("ROLE_USER");
+        List<User> users = ServiceTestUtils.generateUserListFoundByEmailAndPhoneNumber(email, phoneNumber);
 
         given(userService.getByEmailOrPhoneNumber(email, phoneNumber)).willReturn(users);
 
@@ -229,9 +219,9 @@ public class UserServiceUnitTests {
 
     @Test
     public void getDataForOrderSuccess() {
-        UserDetailsImpl userDetails = TestUtils.generateUserDetailsRoleUser();
-        UserDataResponse response = TestUtils.generateUserDataResponse();
-        User found = TestUtils.generateUserForDataResponse(response);
+        UserDetailsImpl userDetails = ServiceTestUtils.generateUserDetails();
+        UserDataResponse response = ServiceTestUtils.generateUserDataResponse();
+        User found = ServiceTestUtils.generateUserForDataResponse(response);
 
         given(userService.getByEmail(userDetails.getUsername())).willReturn(found);
         given(userService.getByEmailThrowsException(userDetails.getUsername())).willReturn(found);
@@ -245,10 +235,9 @@ public class UserServiceUnitTests {
 
     @Test(expected = UserNotFoundException.class)
     public void getDataForOrderFail() {
-        UserDetailsImpl userDetails = TestUtils.generateUserDetailsRoleUser();
-        String invalidEmail = TestUtils.generateInvalidEmail();
+        UserDetailsImpl userDetails = ServiceTestUtils.generateUserDetails();
+        String invalidEmail = ServiceTestUtils.generateInvalidEmail();
         userDetails.setUsername(invalidEmail);
-        UserDataResponse response = TestUtils.generateUserDataResponse();
 
 
         given(userService.getByEmail(invalidEmail)).willReturn(null);
@@ -260,8 +249,8 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByIdSuccess() {
-        int id = TestUtils.generateUserIdGetBySuccess();
-        User found = TestUtils.generateUserFoundById(id);
+        int id = ServiceTestUtils.generateUserIdGetBySuccess();
+        User found = ServiceTestUtils.generateUserFoundById(id);
 
         given(userRepository.findById(id)).willReturn(found);
 
@@ -271,7 +260,7 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByIdReturnsNull() {
-        int id = TestUtils.generateUserIdGetByFail();
+        int id = ServiceTestUtils.generateUserIdGetByFail();
 
         given(userRepository.findById(id)).willReturn(null);
 
@@ -281,8 +270,8 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByIdThrowsExceptionSuccess() {
-        int id = TestUtils.generateUserIdGetBySuccess();
-        User found = TestUtils.generateUserFoundById(id);
+        int id = ServiceTestUtils.generateUserIdGetBySuccess();
+        User found = ServiceTestUtils.generateUserFoundById(id);
 
         given(userService.getById(id)).willReturn(found);
 
@@ -292,7 +281,7 @@ public class UserServiceUnitTests {
 
     @Test(expected = UserNotFoundException.class)
     public void getByIdThrowsExceptionFail() {
-        int id = TestUtils.generateUserIdGetByFail();
+        int id = ServiceTestUtils.generateUserIdGetByFail();
 
         given(userService.getById(id)).willReturn(null);
 
@@ -301,8 +290,8 @@ public class UserServiceUnitTests {
 
     @Test
     public void getAllSuccess() {
-        int listSize = TestUtils.generateUserListSize();
-        List<User> users = TestUtils.generateUserList(listSize);
+        int listSize = ServiceTestUtils.generateUserListSize();
+        List<User> users = ServiceTestUtils.generateUserList(listSize);
 
         given(userRepository.findAll()).willReturn(users);
 
@@ -313,32 +302,29 @@ public class UserServiceUnitTests {
     @Test
     @Transactional
     public void editSuccess() {
-        ModifyUserDTO modifyUserDTO = TestUtils.generateModifyUserDTOSuccess();
-        User toEdit = TestUtils.generateUserToEdit(modifyUserDTO);
-        User foundById = TestUtils.generateUserFoundById(toEdit.getId());
-        User edited = TestUtils.generateEditedUser(toEdit);
+        User toEdit = ServiceTestUtils.generateUserToEdit();
+        User foundById = ServiceTestUtils.generateUserFoundById(toEdit.getId());
+        User edited = ServiceTestUtils.generateEditedUser(toEdit);
 
-        given(userRepository.findById(modifyUserDTO.getId())).willReturn(foundById);
-        given(userService.getById(modifyUserDTO.getId())).willReturn(foundById);
-        given(userService.getByIdThrowsException(modifyUserDTO.getId())).willReturn(foundById);
+        given(userRepository.findById(toEdit.getId())).willReturn(foundById);
+        given(userService.getById(toEdit.getId())).willReturn(foundById);
+        given(userService.getByIdThrowsException(toEdit.getId())).willReturn(foundById);
         given(userRepository.findByPhoneNumber(toEdit.getPhoneNumber())).willReturn(null);
         given(userRepository.save(toEdit)).willReturn(edited);
 
-        User result = userService.edit(toEdit);
+        userService.edit(toEdit);
 
     }
 
     @Test(expected = UserNotFoundException.class)
     public void editFailId() {
-        ModifyUserDTO modifyUserDTO = TestUtils.generateModifyUserDTOFailEmail();
-        User toEdit = TestUtils.generateUserToEdit(modifyUserDTO);
-        int userId = TestUtils.generateUserIdEditFail();
-        modifyUserDTO.setId(userId);
+        User toEdit = ServiceTestUtils.generateUserToEditFailId();
+        int userId = ServiceTestUtils.generateUserIdEditFail();
         toEdit.setId(userId);
 
-        given(userRepository.findById(modifyUserDTO.getId())).willReturn(null);
-        given(userService.getById(modifyUserDTO.getId())).willReturn(null);
-        given(userService.getByIdThrowsException(modifyUserDTO.getId())).willThrow(UserNotFoundException.class);
+        given(userRepository.findById(userId)).willReturn(null);
+        given(userService.getById(userId)).willReturn(null);
+        given(userService.getByIdThrowsException(userId)).willThrow(UserNotFoundException.class);
 
         userService.edit(toEdit);
     }
@@ -346,15 +332,14 @@ public class UserServiceUnitTests {
     @Test(expected = UserAlreadyExistsException.class)
     @Transactional
     public void editFailPhoneNumber() {
-        ModifyUserDTO modifyUserDTO = TestUtils.generateModifyUserDTOFailPhoneNumber();
-        User toEdit = TestUtils.generateUserToEdit(modifyUserDTO);
-        User foundById = TestUtils.generateUserFoundById(toEdit.getId());
-        User foundByPhone = TestUtils.generateUserFoundByPhone(modifyUserDTO.getPhoneNumber());
-        User edited = TestUtils.generateEditedUser(toEdit);
+        String phone = ServiceTestUtils.generatePhoneNumberEditFail();
+        User toEdit = ServiceTestUtils.generateUserToEditFailPhoneNumber(phone);
+        User foundById = ServiceTestUtils.generateUserFoundById(toEdit.getId());
+        User foundByPhone = ServiceTestUtils.generateUserFoundByPhoneNumber(phone);
 
-        given(userRepository.findById(modifyUserDTO.getId())).willReturn(foundById);
-        given(userService.getById(modifyUserDTO.getId())).willReturn(foundById);
-        given(userService.getByIdThrowsException(modifyUserDTO.getId())).willReturn(foundById);
+        given(userRepository.findById(toEdit.getId())).willReturn(foundById);
+        given(userService.getById(toEdit.getId())).willReturn(foundById);
+        given(userService.getByIdThrowsException(toEdit.getId())).willReturn(foundById);
         given(userRepository.findByPhoneNumber(toEdit.getPhoneNumber())).willReturn(foundByPhone);
 
         userService.edit(toEdit);

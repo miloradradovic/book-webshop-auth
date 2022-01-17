@@ -1,6 +1,5 @@
 package com.example.authservice.api;
 
-import com.example.authservice.TestUtils;
 import com.example.authservice.dto.LoginDataDTO;
 import com.example.authservice.dto.RegisterDataDTO;
 import com.example.authservice.exceptions.UnauthenticatedException;
@@ -15,7 +14,6 @@ import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -56,13 +54,13 @@ public class AuthControllerUnitTests {
 
     @Test
     public void loginSuccess() throws Exception {
-        LoginDataDTO loginDataDTO = TestUtils.generateLoginDataDTOSuccess();
-        LoginData loginData = TestUtils.generateLoginDataSuccess();
-        String jwtToken = TestUtils.generateJwtToken();
+        LoginDataDTO loginDataDTO = ApiTestUtils.generateLoginDataDTOSuccess();
+        LoginData loginData = ApiTestUtils.generateLoginData(loginDataDTO);
+        String jwtToken = ApiTestUtils.generateJwtTokenRoleUser();
 
         given(userMapper.toLoginData(loginDataDTO)).willReturn(loginData);
-        given(authService.login(userMapper.toLoginData(loginDataDTO))).willReturn(jwtToken);
-        String json = TestUtils.json(loginDataDTO);
+        given(authService.login(loginData)).willReturn(jwtToken);
+        String json = ApiTestUtils.json(loginDataDTO);
 
         mockMvc.perform(post(basePath + "/log-in")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -70,14 +68,15 @@ public class AuthControllerUnitTests {
                 .andExpect(status().isOk());
     }
 
+
     @Test
     public void loginBadCredentials() throws Exception {
-        LoginDataDTO loginDataDTO = TestUtils.generateLoginDataDTOBadCredentials();
-        LoginData loginData = TestUtils.generateLoginDataBadCredentials();
+        LoginDataDTO loginDataDTO = ApiTestUtils.generateLoginDataDTOBadCredentials();
+        LoginData loginData = ApiTestUtils.generateLoginData(loginDataDTO);
 
         given(userMapper.toLoginData(loginDataDTO)).willReturn(loginData);
         given(authService.login(userMapper.toLoginData(loginDataDTO))).willThrow(UnauthenticatedException.class);
-        String json = TestUtils.json(loginDataDTO);
+        String json = ApiTestUtils.json(loginDataDTO);
 
         mockMvc.perform(post(basePath + "/log-in")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,13 +87,13 @@ public class AuthControllerUnitTests {
     @Test
     @Transactional
     public void registerSuccess() throws Exception {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOSuccessUser();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
-        User registered = TestUtils.generateRegisteredUser(toRegister);
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOSuccess("ROLE_USER");
+        User toRegister = ApiTestUtils.generateUserToRegister(registerDataDTO);
+        User registered = ApiTestUtils.generateRegisteredUser(toRegister);
 
         given(userMapper.toUser(registerDataDTO)).willReturn(toRegister);
         given(authService.register(userMapper.toUser(registerDataDTO))).willReturn(registered);
-        String json = TestUtils.json(registerDataDTO);
+        String json = ApiTestUtils.json(registerDataDTO);
 
         mockMvc.perform(post(basePath + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -105,12 +104,12 @@ public class AuthControllerUnitTests {
 
     @Test
     public void registerFailEmail() throws Exception {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailEmail();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOFailEmail("ROLE_USER");
+        User toRegister = ApiTestUtils.generateUserToRegister(registerDataDTO);
 
         given(userMapper.toUser(registerDataDTO)).willReturn(toRegister);
         given(authService.register(userMapper.toUser(registerDataDTO))).willThrow(UserAlreadyExistsException.class);
-        String json = TestUtils.json(registerDataDTO);
+        String json = ApiTestUtils.json(registerDataDTO);
 
         mockMvc.perform(post(basePath + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -120,12 +119,12 @@ public class AuthControllerUnitTests {
 
     @Test
     public void registerFailPhoneNumber() throws Exception {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailPhoneNumber();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOFailPhoneNumber("ROLE_USER");
+        User toRegister = ApiTestUtils.generateUserToRegister(registerDataDTO);
 
         given(userMapper.toUser(registerDataDTO)).willReturn(toRegister);
         given(authService.register(userMapper.toUser(registerDataDTO))).willThrow(UserAlreadyExistsException.class);
-        String json = TestUtils.json(registerDataDTO);
+        String json = ApiTestUtils.json(registerDataDTO);
 
         mockMvc.perform(post(basePath + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -135,12 +134,12 @@ public class AuthControllerUnitTests {
 
     @Test
     public void registerFailEmailAndPhoneNumber() throws Exception {
-        RegisterDataDTO registerDataDTO = TestUtils.generateRegisterDataDTOFailEmailAndPhoneNumber();
-        User toRegister = TestUtils.generateUserToRegister(registerDataDTO);
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOFailEmailAndPhoneNumber("ROLE_USER");
+        User toRegister = ApiTestUtils.generateUserToRegister(registerDataDTO);
 
         given(userMapper.toUser(registerDataDTO)).willReturn(toRegister);
         given(authService.register(userMapper.toUser(registerDataDTO))).willThrow(UserAlreadyExistsException.class);
-        String json = TestUtils.json(registerDataDTO);
+        String json = ApiTestUtils.json(registerDataDTO);
 
         mockMvc.perform(post(basePath + "/register")
                         .contentType(MediaType.APPLICATION_JSON)
