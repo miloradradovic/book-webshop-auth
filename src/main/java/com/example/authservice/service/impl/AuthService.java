@@ -38,8 +38,7 @@ public class AuthService implements IAuthService {
                     new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            String json = jwtUtils.generateJwtToken(authentication);
-            return json;
+            return jwtUtils.generateJwtToken(authentication);
         } catch (Exception e) {
             throw new UnauthenticatedException();
         }

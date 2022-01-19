@@ -1,7 +1,6 @@
 package com.example.authservice.service;
 
 import com.example.authservice.client.UserDataResponse;
-import com.example.authservice.exceptions.CreateUserFailException;
 import com.example.authservice.exceptions.UserAlreadyExistsException;
 import com.example.authservice.exceptions.UserNotFoundException;
 import com.example.authservice.model.User;
@@ -13,28 +12,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
-import javax.annotation.PostConstruct;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.BDDMockito.given;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserServiceUnitTests {
-
-    private MockMvc mockMvc;
 
     @InjectMocks
     private UserService userService;
@@ -45,33 +35,25 @@ public class UserServiceUnitTests {
     @Mock
     private AuthService authService;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    @PostConstruct
-    public void setup() {
-        this.mockMvc = MockMvcBuilders.
-                webAppContextSetup(webApplicationContext).build();
-    }
-
     @Test
     public void getByEmailAndPasswordSuccess() {
-        String email = ServiceTestUtils.generateValidEmail();
-        String password = ServiceTestUtils.generateValidPassword();
-        User found = ServiceTestUtils.generateUserFoundByEmailAndPassword(email, password);
+        String email = ServiceTestUtils.generateEmail(true);
+        String password = ServiceTestUtils.generatePassword(true);
+        User found = ServiceTestUtils.generateUserFoundBy(email, password, 0, "");
 
-        given(userRepository.findByEmailAndPassword(email, password)).willReturn(found);
+        when(userRepository.findByEmailAndPassword(email, password)).thenReturn(found);
 
         User result = userService.getByEmailAndPassword(email, password);
-        assertEquals(found.getEmail(), result.getEmail());
+        assertEquals(email, result.getEmail());
+        assertEquals(password, result.getPassword());
     }
 
     @Test
     public void getByEmailAndPasswordReturnsNull() {
-        String email = ServiceTestUtils.generateInvalidEmail();
-        String password = ServiceTestUtils.generateInvalidPassword();
+        String email = ServiceTestUtils.generateEmail(false);
+        String password = ServiceTestUtils.generatePassword(false);
 
-        given(userRepository.findByEmailAndPassword(email, password)).willReturn(null);
+        when(userRepository.findByEmailAndPassword(email, password)).thenReturn(null);
 
         User result = userService.getByEmailAndPassword(email, password);
         assertNull(result);
@@ -79,20 +61,21 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailSuccess() {
-        String email = ServiceTestUtils.generateValidEmail();
-        User found = ServiceTestUtils.generateUserFoundByEmail(email);
+        String email = ServiceTestUtils.generateEmail(true);
+        User found = ServiceTestUtils.generateUserFoundBy(email, "", 0, "");
 
-        given(userRepository.findByEmail(email)).willReturn(found);
+        when(userRepository.findByEmail(email)).thenReturn(found);
 
         User result = userService.getByEmail(email);
-        assertEquals(found.getEmail(), result.getEmail());
+        assertNotNull(result);
+        assertEquals(email, result.getEmail());
     }
 
     @Test
     public void getByEmailReturnsNull() {
-        String email = ServiceTestUtils.generateInvalidEmail();
+        String email = ServiceTestUtils.generateEmail(false);
 
-        given(userRepository.findByEmail(email)).willReturn(null);
+        when(userRepository.findByEmail(email)).thenReturn(null);
 
         User result = userService.getByEmail(email);
         assertNull(result);
@@ -100,42 +83,44 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByEmailThrowsExceptionSuccess() {
-        String email = ServiceTestUtils.generateValidEmail();
-        User found = ServiceTestUtils.generateUserFoundByEmail(email);
+        String email = ServiceTestUtils.generateEmail(true);
+        User found = ServiceTestUtils.generateUserFoundBy(email, "", 0, "");
 
-        given(userService.getByEmail(email)).willReturn(found);
+        when(userService.getByEmail(email)).thenReturn(found);
 
         User result = userService.getByEmailThrowsException(email);
-        assertEquals(found.getEmail(), result.getEmail());
+        assertNotNull(result);
+        assertEquals(email, result.getEmail());
     }
 
     @Test(expected = UserNotFoundException.class)
     public void getByEmailThrowsExceptionFail() {
-        String email = ServiceTestUtils.generateInvalidEmail();
+        String email = ServiceTestUtils.generateEmail(false);
 
-        given(userService.getByEmail(email)).willReturn(null);
+        when(userService.getByEmail(email)).thenReturn(null);
+
         userService.getByEmailThrowsException(email);
     }
 
     @Test
     public void getByEmailOrPhoneNumberSuccess() {
-        String email = ServiceTestUtils.generateValidEmail();
-        String phone = ServiceTestUtils.generateValidPhoneNumber();
-        List<User> found = ServiceTestUtils.generateUserListFoundByEmailOrPhoneNumber(email, phone);
+        String email = ServiceTestUtils.generateEmail(true);
+        String phone = ServiceTestUtils.generatePhoneNumber(true);
+        List<User> found = ServiceTestUtils.generateUserListFoundBy(email, phone);
 
-        given(userRepository.findByEmailOrPhoneNumber(email, phone)).willReturn(found);
+        when(userRepository.findByEmailOrPhoneNumber(email, phone)).thenReturn(found);
 
         List<User> result = userService.getByEmailOrPhoneNumber(email, phone);
+        assertNotNull(result);
         assertEquals(found.size(), result.size());
-        assertEquals(found.get(0).getEmail(), result.get(0).getEmail());
     }
 
     @Test
     public void getByEmailOrPhoneNumberReturnsEmpty() {
-        String email = ServiceTestUtils.generateInvalidEmail();
-        String phone = ServiceTestUtils.generateInvalidPhoneNumber();
+        String email = ServiceTestUtils.generateEmail(false);
+        String phone = ServiceTestUtils.generatePhoneNumber(false);
 
-        given(userRepository.findByEmailOrPhoneNumber(email, phone)).willReturn(new ArrayList<>());
+        when(userRepository.findByEmailOrPhoneNumber(email, phone)).thenReturn(new ArrayList<>());
 
         List<User> result = userService.getByEmailOrPhoneNumber(email, phone);
         assertEquals(0, result.size());
@@ -144,75 +129,67 @@ public class UserServiceUnitTests {
     @Test
     @Transactional
     public void createUserSuccess() {
-        User toRegister = ServiceTestUtils.generateUserToRegisterSuccess("ROLE_USER");
+        User toRegister = ServiceTestUtils.generateUserToRegister("", "ROLE_USER");
         User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
 
-        given(userRepository.save(toRegister)).willReturn(registered);
+        when(userRepository.save(toRegister)).thenReturn(registered);
 
-        User created = userService.create(toRegister);
-        assertEquals(registered.getEmail(), created.getEmail());
+        User result = userService.create(toRegister);
+        assertEquals(registered.getId(), result.getId());
     }
 
     @Test
     @Transactional
     public void createAdminSuccess() {
-        User toRegister = ServiceTestUtils.generateUserToRegisterSuccess("ROLE_ADMIN");
+        User toRegister = ServiceTestUtils.generateUserToRegister("", "ROLE_ADMIN");
         User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
 
-        given(userRepository.save(toRegister)).willReturn(registered);
+        when(userRepository.save(toRegister)).thenReturn(registered);
 
-        User created = userService.create(toRegister);
-        assertEquals(registered.getEmail(), created.getEmail());
+        User result = userService.create(toRegister);
+        assertEquals(registered.getId(), result.getId());
     }
 
     @Test
     @Transactional
     public void createThrowsExceptionSuccess() {
-        String email = ServiceTestUtils.generateInvalidEmail();
-        String phoneNumber = ServiceTestUtils.generateInvalidPhoneNumber();
-        User toRegister = ServiceTestUtils.generateUserToRegisterSuccess("ROLE_USER");
+        User toRegister = ServiceTestUtils.generateUserToRegister("", "ROLE_USER");
         User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
 
-        given(userService.getByEmailOrPhoneNumber(email, phoneNumber)).willReturn(new ArrayList<>());
-        given(userService.create(toRegister)).willReturn(registered);
+        when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(new ArrayList<>());
+        when(userService.create(toRegister)).thenReturn(registered);
 
         User result = userService.createThrowsException(toRegister);
-        assertEquals(registered.getEmail(), result.getEmail());
+        assertNotNull(result);
+        assertEquals(registered.getId(), result.getId());
     }
 
     @Test(expected = UserAlreadyExistsException.class)
     public void createThrowsExceptionFailEmail() {
-        String email = ServiceTestUtils.generateValidEmail();
-        String phoneNumber = ServiceTestUtils.generateInvalidPhoneNumber();
-        User toRegister = ServiceTestUtils.generateUserToRegisterFailEmail("ROLE_USER");
-        List<User> users = ServiceTestUtils.generateUserListFoundByEmail(email);
+        User toRegister = ServiceTestUtils.generateUserToRegister("email", "ROLE_USER");
+        List<User> users = ServiceTestUtils.generateUserListFoundBy(toRegister.getEmail(), "");
 
-        given(userRepository.findByEmailOrPhoneNumber(email, phoneNumber)).willReturn(users);
-        given(userService.getByEmailOrPhoneNumber(email, phoneNumber)).willReturn(users);
+        when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
 
         userService.createThrowsException(toRegister);
     }
 
-    @Test(expected = CreateUserFailException.class)
+    @Test(expected = UserAlreadyExistsException.class)
     public void createThrowsExceptionFailPhoneNumber() {
-        String email = ServiceTestUtils.generateInvalidEmail();
-        String phoneNumber = ServiceTestUtils.generateInvalidPhoneNumber();
-        User toRegister = ServiceTestUtils.generateUserToRegisterFailPhoneNumber("ROLE_USER");
-        List<User> users = ServiceTestUtils.generateUserListFoundByPhoneNumber(phoneNumber);
+        User toRegister = ServiceTestUtils.generateUserToRegister("phone", "ROLE_USER");
+        List<User> users = ServiceTestUtils.generateUserListFoundBy("", toRegister.getPhoneNumber());
 
-        given(userService.getByEmailOrPhoneNumber(email, phoneNumber)).willReturn(users);
+        when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
 
         userService.createThrowsException(toRegister);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
     public void createThrowsExceptionFailEmailAndPhoneNumber() {
-        String email = ServiceTestUtils.generateValidEmail();
-        String phoneNumber = ServiceTestUtils.generateValidPhoneNumber();
-        User toRegister = ServiceTestUtils.generateUserToRegisterFailEmailAndPhoneNumber("ROLE_USER");
-        List<User> users = ServiceTestUtils.generateUserListFoundByEmailAndPhoneNumber(email, phoneNumber);
+        User toRegister = ServiceTestUtils.generateUserToRegister("emailandphone", "ROLE_USER");
+        List<User> users = ServiceTestUtils.generateUserListFoundBy(toRegister.getEmail(), toRegister.getPhoneNumber());
 
-        given(userService.getByEmailOrPhoneNumber(email, phoneNumber)).willReturn(users);
+        when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
 
         userService.createThrowsException(toRegister);
     }
@@ -223,46 +200,44 @@ public class UserServiceUnitTests {
         UserDataResponse response = ServiceTestUtils.generateUserDataResponse();
         User found = ServiceTestUtils.generateUserForDataResponse(response);
 
-        given(userService.getByEmail(userDetails.getUsername())).willReturn(found);
-        given(userService.getByEmailThrowsException(userDetails.getUsername())).willReturn(found);
-        given(authService.getCurrentlyLoggedIn()).willReturn(userDetails);
+        when(authService.getCurrentlyLoggedIn()).thenReturn(userDetails);
+        when(userService.getByEmail(userDetails.getUsername())).thenReturn(found);
+        when(userService.getByEmailThrowsException(userDetails.getUsername())).thenReturn(found);
 
-
-        UserDataResponse result = userService.getDataForOrder();
-        assertEquals(response.getAddress(), result.getAddress());
-        assertEquals(response.getAddress(), result.getAddress());
+        UserDataResponse userDataResponse = userService.getDataForOrder();
+        assertNotNull(userDataResponse);
+        assertEquals(response.getAddress(), userDataResponse.getAddress());
+        assertEquals(response.getPhoneNumber(), userDataResponse.getPhoneNumber());
     }
 
     @Test(expected = UserNotFoundException.class)
     public void getDataForOrderFail() {
         UserDetailsImpl userDetails = ServiceTestUtils.generateUserDetails();
-        String invalidEmail = ServiceTestUtils.generateInvalidEmail();
+        String invalidEmail = ServiceTestUtils.generateEmail(false);
         userDetails.setUsername(invalidEmail);
 
-
-        given(userService.getByEmail(invalidEmail)).willReturn(null);
-        given(userService.getByEmailThrowsException(invalidEmail)).willThrow(UserNotFoundException.class);
-        given(authService.getCurrentlyLoggedIn()).willReturn(userDetails);
+        when(userService.getByEmailThrowsException(userDetails.getUsername())).thenThrow(UserNotFoundException.class);
 
         userService.getDataForOrder();
     }
 
     @Test
     public void getByIdSuccess() {
-        int id = ServiceTestUtils.generateUserIdGetBySuccess();
-        User found = ServiceTestUtils.generateUserFoundById(id);
+        int id = ServiceTestUtils.generateUserId(true);
+        User found = ServiceTestUtils.generateUserFoundBy("", "", id, "");
 
-        given(userRepository.findById(id)).willReturn(found);
+        when(userRepository.findById(id)).thenReturn(found);
 
         User result = userService.getById(id);
-        assertEquals(found.getId(), result.getId());
+        assertNotNull(result);
+        assertEquals(id, result.getId());
     }
 
     @Test
     public void getByIdReturnsNull() {
-        int id = ServiceTestUtils.generateUserIdGetByFail();
+        int id = ServiceTestUtils.generateUserId(false);
 
-        given(userRepository.findById(id)).willReturn(null);
+        when(userRepository.findById(id)).thenReturn(null);
 
         User result = userService.getById(id);
         assertNull(result);
@@ -270,20 +245,21 @@ public class UserServiceUnitTests {
 
     @Test
     public void getByIdThrowsExceptionSuccess() {
-        int id = ServiceTestUtils.generateUserIdGetBySuccess();
-        User found = ServiceTestUtils.generateUserFoundById(id);
+        int id = ServiceTestUtils.generateUserId(true);
+        User found = ServiceTestUtils.generateUserFoundBy("", "",  id, "");
 
-        given(userService.getById(id)).willReturn(found);
+        when(userService.getById(id)).thenReturn(found);
 
         User result = userService.getByIdThrowsException(id);
-        assertEquals(found.getId(), result.getId());
+        assertNotNull(result);
+        assertEquals(id, result.getId());
     }
 
     @Test(expected = UserNotFoundException.class)
     public void getByIdThrowsExceptionFail() {
-        int id = ServiceTestUtils.generateUserIdGetByFail();
+        int id = ServiceTestUtils.generateUserId(false);
 
-        given(userService.getById(id)).willReturn(null);
+        when(userService.getById(id)).thenReturn(null);
 
         userService.getByIdThrowsException(id);
     }
@@ -293,56 +269,64 @@ public class UserServiceUnitTests {
         int listSize = ServiceTestUtils.generateUserListSize();
         List<User> users = ServiceTestUtils.generateUserList(listSize);
 
-        given(userRepository.findAll()).willReturn(users);
+        when(userRepository.findAll()).thenReturn(users);
 
         List<User> result = userService.getAll();
+        assertNotNull(result);
         assertEquals(listSize, result.size());
     }
 
     @Test
     @Transactional
     public void editSuccess() {
-        User toEdit = ServiceTestUtils.generateUserToEdit();
-        User foundById = ServiceTestUtils.generateUserFoundById(toEdit.getId());
-        User edited = ServiceTestUtils.generateEditedUser(toEdit);
+        User toEdit = ServiceTestUtils.generateUserToEdit("");
+        User foundById = ServiceTestUtils.generateUserFoundBy("", "", toEdit.getId(), "");
+        User edited = ServiceTestUtils.generateEditedUser(foundById, toEdit);
 
-        given(userRepository.findById(toEdit.getId())).willReturn(foundById);
-        given(userService.getById(toEdit.getId())).willReturn(foundById);
-        given(userService.getByIdThrowsException(toEdit.getId())).willReturn(foundById);
-        given(userRepository.findByPhoneNumber(toEdit.getPhoneNumber())).willReturn(null);
-        given(userRepository.save(toEdit)).willReturn(edited);
+        when(userService.getById(toEdit.getId())).thenReturn(foundById);
+        when(userService.getByIdThrowsException(toEdit.getId())).thenReturn(foundById);
+        when(userRepository.save(foundById)).thenReturn(edited);
 
-        userService.edit(toEdit);
-
+        User result = userService.edit(toEdit);
+        assertNotNull(result);
+        assertEquals(edited.getId(), result.getId());
+        assertEquals(edited.getEmail(), result.getEmail());
+        assertEquals(edited.getPhoneNumber(), result.getPhoneNumber());
     }
 
     @Test(expected = UserNotFoundException.class)
     public void editFailId() {
-        User toEdit = ServiceTestUtils.generateUserToEditFailId();
-        int userId = ServiceTestUtils.generateUserIdEditFail();
-        toEdit.setId(userId);
+        User toEdit = ServiceTestUtils.generateUserToEdit("id");
 
-        given(userRepository.findById(userId)).willReturn(null);
-        given(userService.getById(userId)).willReturn(null);
-        given(userService.getByIdThrowsException(userId)).willThrow(UserNotFoundException.class);
+        when(userService.getByIdThrowsException(toEdit.getId())).thenThrow(UserNotFoundException.class);
 
         userService.edit(toEdit);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
-    @Transactional
-    public void editFailPhoneNumber() {
-        String phone = ServiceTestUtils.generatePhoneNumberEditFail();
-        User toEdit = ServiceTestUtils.generateUserToEditFailPhoneNumber(phone);
-        User foundById = ServiceTestUtils.generateUserFoundById(toEdit.getId());
-        User foundByPhone = ServiceTestUtils.generateUserFoundByPhoneNumber(phone);
+    public void editFailEmail() {
+        User toEdit = ServiceTestUtils.generateUserToEdit("email");
+        User foundById = ServiceTestUtils.generateUserFoundBy("", "", toEdit.getId(), "");
+        User foundByEmail = ServiceTestUtils.generateUserFoundBy(toEdit.getEmail(), "", 0, "");
 
-        given(userRepository.findById(toEdit.getId())).willReturn(foundById);
-        given(userService.getById(toEdit.getId())).willReturn(foundById);
-        given(userService.getByIdThrowsException(toEdit.getId())).willReturn(foundById);
-        given(userRepository.findByPhoneNumber(toEdit.getPhoneNumber())).willReturn(foundByPhone);
+        when(userService.getById(toEdit.getId())).thenReturn(foundById);
+        when(userService.getByIdThrowsException(toEdit.getId())).thenReturn(foundById);
+        when(userRepository.findByEmail(toEdit.getEmail())).thenReturn(foundByEmail);
 
         userService.edit(toEdit);
+    }
 
+    @Test(expected = UserAlreadyExistsException.class)
+    public void editFailPhoneNumber() {
+        User toEdit = ServiceTestUtils.generateUserToEdit("phone");
+        User foundById = ServiceTestUtils.generateUserFoundBy("", "", toEdit.getId(), "");
+        User foundByPhone = ServiceTestUtils.generateUserFoundBy("", "", 0, toEdit.getPhoneNumber());
+
+        when(userService.getById(toEdit.getId())).thenReturn(foundById);
+        when(userService.getByIdThrowsException(toEdit.getId())).thenReturn(foundById);
+        when(userRepository.findByEmail(toEdit.getEmail())).thenReturn(null);
+        when(userRepository.findByPhoneNumber(toEdit.getPhoneNumber())).thenReturn(foundByPhone);
+
+        userService.edit(toEdit);
     }
 }

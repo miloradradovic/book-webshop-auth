@@ -115,9 +115,10 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public void delete(int userId) {
+    public boolean delete(int userId) {
         try {
             userRepository.deleteById(userId);
+            return true;
         } catch (Exception e) {
             throw new DeleteUserFailException();
         }

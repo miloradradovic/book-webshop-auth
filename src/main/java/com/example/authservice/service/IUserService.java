@@ -18,6 +18,6 @@ public interface IUserService {
     User getByIdThrowsException(int userId);
     List<User> getAll();
     User edit(User toEdit);
-    void delete(int userId);
+    boolean delete(int userId);
 
 }

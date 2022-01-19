@@ -1,310 +1,270 @@
 package com.example.authservice.api;
 
 import com.example.authservice.client.UserDataResponse;
-import com.example.authservice.dto.*;
+import com.example.authservice.client.UserDataResponseDTO;
+import com.example.authservice.dto.ModifyUserDTO;
+import com.example.authservice.dto.RegisterDataDTO;
+import com.example.authservice.dto.UserDTO;
 import com.example.authservice.exceptions.UserAlreadyExistsException;
 import com.example.authservice.exceptions.UserNotFoundException;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.User;
-import com.example.authservice.security.UserDetailsImpl;
 import com.example.authservice.service.impl.UserService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.WebApplicationContext;
-
-import javax.annotation.PostConstruct;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.Is.is;
-import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.*;
 
-@RunWith(SpringRunner.class)
+@RunWith(MockitoJUnitRunner.class)
 @SpringBootTest(webEnvironment= SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerUnitTests {
 
-    private MockMvc mockMvc;
-
-    @Mock
-    private UserMapper userMapper;
+    @InjectMocks
+    private UserController userController;
 
     @Mock
     private UserService userService;
 
-    @Autowired
-    private WebApplicationContext webApplicationContext;
-
-    private final String basePath = "/api/users";
-
-    @PostConstruct
-    public void setup() {
-        this.mockMvc = MockMvcBuilders.
-                webAppContextSetup(webApplicationContext).build();
-    }
+    @Mock
+    private UserMapper userMapper;
 
     @Test
-    public void getDataForOrderSuccess() throws Exception {
-        loginUser();
-        UserDataResponse response = ApiTestUtils.generateUserDataResponse();
-        given(userService.getDataForOrder()).willReturn(response);
+    public void getDataForOrderSuccess() {
+        UserDataResponse userDataResponse = ApiTestUtils.generateUserDataResponse();
+        when(userService.getDataForOrder()).thenReturn(userDataResponse);
 
-        mockMvc.perform(get(basePath + "/client/data-for-order")
-                        )
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.address", is(response.getAddress())))
-                .andExpect(jsonPath("$.phoneNumber", is(response.getPhoneNumber())));
+        UserDataResponseDTO response = userController.getDataForOrder();
+        assertNotNull(response);
+        assertEquals(userDataResponse.getAddress(), response.getAddress());
+        assertEquals(userDataResponse.getPhoneNumber(), response.getPhoneNumber());
     }
 
     @Test
     @Transactional
-    public void createUserSuccess() throws Exception {
-        loginAdmin();
-        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOSuccess("ROLE_USER");
-        User toCreate = ApiTestUtils.generateUserToRegister(registerDataDTO);
+    public void createUserSuccess() {
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTO("", "ROLE_USER");
+        User toCreate = ApiTestUtils.generateUser(registerDataDTO);
         User registered = ApiTestUtils.generateRegisteredUser(toCreate);
+        UserDTO userDTO = ApiTestUtils.generateUserDTO(registered);
 
-        given(userMapper.toUser(registerDataDTO)).willReturn(toCreate);
-        given(userService.createThrowsException(userMapper.toUser(registerDataDTO))).willReturn(registered);
+        when(userMapper.toUser(registerDataDTO)).thenReturn(toCreate);
+        when(userService.createThrowsException(toCreate)).thenReturn(registered);
+        when(userMapper.toUserDTO(registered)).thenReturn(userDTO);
 
-        String json = ApiTestUtils.json(registerDataDTO);
-
-        mockMvc.perform(post(basePath + "/create")
-                .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
+        ResponseEntity<UserDTO> response = userController.create(registerDataDTO);
+        verify(userService).createThrowsException(toCreate);
+        verifyNoMoreInteractions(userService);
+        assertNotNull(response.getBody());
+        assertEquals(registered.getId(), response.getBody().getId());
+        assertEquals(201, response.getStatusCodeValue());
     }
 
     @Test
     @Transactional
-    public void createAdminSuccess() throws Exception {
-        loginAdmin();
-        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOSuccess("ROLE_ADMIN");
-        User toCreate = ApiTestUtils.generateUserToRegister(registerDataDTO);
+    public void createAdminSuccess() {
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTO("", "ROLE_ADMIN");
+        User toCreate = ApiTestUtils.generateUser(registerDataDTO);
         User registered = ApiTestUtils.generateRegisteredUser(toCreate);
+        UserDTO userDTO = ApiTestUtils.generateUserDTO(registered);
 
-        given(userMapper.toUser(registerDataDTO)).willReturn(toCreate);
-        given(userService.createThrowsException(userMapper.toUser(registerDataDTO))).willReturn(registered);
+        when(userMapper.toUser(registerDataDTO)).thenReturn(toCreate);
+        when(userService.createThrowsException(toCreate)).thenReturn(registered);
+        when(userMapper.toUserDTO(registered)).thenReturn(userDTO);
 
-        String json = ApiTestUtils.json(registerDataDTO);
-
-        mockMvc.perform(post(basePath + "/create")
-                        .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
+        ResponseEntity<UserDTO> response = userController.create(registerDataDTO);
+        verify(userService).createThrowsException(toCreate);
+        verifyNoMoreInteractions(userService);
+        assertNotNull(response.getBody());
+        assertEquals(registered.getId(), response.getBody().getId());
+        assertEquals(201, response.getStatusCodeValue());
     }
 
-    @Test
-    public void createFailEmail() throws Exception {
-        loginAdmin();
-        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOFailEmail("ROLE_USER");
-        User toCreate = ApiTestUtils.generateUserToRegister(registerDataDTO);
+    @Test(expected = UserAlreadyExistsException.class)
+    public void createFailEmail() {
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTO("email", "ROLE_USER");
+        User toCreate = ApiTestUtils.generateUser(registerDataDTO);
 
-        given(userMapper.toUser(registerDataDTO)).willReturn(toCreate);
-        given(userService.createThrowsException(toCreate)).willThrow(UserAlreadyExistsException.class);
+        when(userMapper.toUser(registerDataDTO)).thenReturn(toCreate);
+        when(userService.createThrowsException(toCreate)).thenThrow(UserAlreadyExistsException.class);
 
-        String json = ApiTestUtils.json(registerDataDTO);
-
-        mockMvc.perform(post(basePath + "/create")
-                .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        userController.create(registerDataDTO);
+        verify(userService).createThrowsException(toCreate);
+        verifyNoMoreInteractions(userService);
     }
 
-    @Test
-    public void createFailPhoneNumber() throws Exception {
-        loginAdmin();
-        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOFailPhoneNumber("ROLE_USER");
-        User toCreate = ApiTestUtils.generateUserToRegister(registerDataDTO);
+    @Test(expected = UserAlreadyExistsException.class)
+    public void createFailPhoneNumber() {
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTO("phone", "ROLE_USER");
+        User toCreate = ApiTestUtils.generateUser(registerDataDTO);
 
-        given(userMapper.toUser(registerDataDTO)).willReturn(toCreate);
-        given(userService.createThrowsException(toCreate)).willThrow(UserAlreadyExistsException.class);
+        when(userMapper.toUser(registerDataDTO)).thenReturn(toCreate);
+        when(userService.createThrowsException(toCreate)).thenThrow(UserAlreadyExistsException.class);
 
-        String json = ApiTestUtils.json(registerDataDTO);
-
-        mockMvc.perform(post(basePath + "/create")
-                        .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        userController.create(registerDataDTO);
+        verify(userService).createThrowsException(toCreate);
+        verifyNoMoreInteractions(userService);
     }
 
-    @Test
-    public void createFailEmailAndPhoneNumber() throws Exception {
-        loginAdmin();
-        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTOFailEmailAndPhoneNumber("ROLE_USER");
-        User toCreate = ApiTestUtils.generateUserToRegister(registerDataDTO);
+    @Test(expected = UserAlreadyExistsException.class)
+    public void createFailEmailAndPhoneNumber() {
+        RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTO("emailandphone", "ROLE_USER");
+        User toCreate = ApiTestUtils.generateUser(registerDataDTO);
 
-        given(userMapper.toUser(registerDataDTO)).willReturn(toCreate);
-        given(userService.createThrowsException(toCreate)).willThrow(UserAlreadyExistsException.class);
+        when(userMapper.toUser(registerDataDTO)).thenReturn(toCreate);
+        when(userService.createThrowsException(toCreate)).thenThrow(UserAlreadyExistsException.class);
 
-        String json = ApiTestUtils.json(registerDataDTO);
-
-        mockMvc.perform(post(basePath + "/create")
-                        .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        userController.create(registerDataDTO);
+        verify(userService).createThrowsException(toCreate);
+        verifyNoMoreInteractions(userService);
     }
 
     @Test
     @Transactional
-    public void editSuccess() throws Exception {
-        loginAdmin();
-        int userIdEdit = ApiTestUtils.generateUserIdEditSuccess();
-        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTOSuccess();
-        User toEdit = ApiTestUtils.generateUserToEdit(modifyUserDTO);
+    public void editSuccess() {
+        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTO("");
+        User toEdit = ApiTestUtils.generateUser(modifyUserDTO);
         User edited = ApiTestUtils.generateEditedUser(toEdit);
+        UserDTO userDTO = ApiTestUtils.generateUserDTO(edited);
 
-        given(userMapper.toUser(modifyUserDTO)).willReturn(toEdit);
-        given(userService.edit(toEdit)).willReturn(edited);
+        when(userMapper.toUser(modifyUserDTO)).thenReturn(toEdit);
+        when(userService.edit(toEdit)).thenReturn(edited);
+        when(userMapper.toUserDTO(edited)).thenReturn(userDTO);
 
-        String json = ApiTestUtils.json(modifyUserDTO);
-
-        mockMvc.perform(put(basePath + "/edit/" + userIdEdit)
-                .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.address", is(edited.getAddress())))
-                .andExpect(jsonPath("$.email", is(edited.getEmail())));
+        ResponseEntity<UserDTO> response = userController.edit(modifyUserDTO, modifyUserDTO.getId());
+        verify(userService).edit(toEdit);
+        verifyNoMoreInteractions(userService);
+        assertNotNull(response.getBody());
+        assertEquals(200, response.getStatusCodeValue());
     }
 
-    @Test
-    public void editFailEmail() throws Exception {
-        loginAdmin();
-        int userIdEdit = ApiTestUtils.generateUserIdEditSuccess();
-        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTOFailEmail();
-        User toEdit = ApiTestUtils.generateUserToEdit(modifyUserDTO);
+    @Test(expected = UserAlreadyExistsException.class)
+    public void editFailEmail() {
+        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTO("email");
+        User toEdit = ApiTestUtils.generateUser(modifyUserDTO);
 
-        given(userMapper.toUser(modifyUserDTO)).willReturn(toEdit);
-        given(userService.edit(toEdit)).willThrow(UserAlreadyExistsException.class);
+        when(userMapper.toUser(modifyUserDTO)).thenReturn(toEdit);
+        when(userService.edit(toEdit)).thenThrow(UserAlreadyExistsException.class);
 
-        String json = ApiTestUtils.json(modifyUserDTO);
-
-        mockMvc.perform(put(basePath + "/edit/" + userIdEdit)
-                        .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        userController.edit(modifyUserDTO, modifyUserDTO.getId());
+        verify(userService).edit(toEdit);
+        verifyNoMoreInteractions(userService);
     }
 
-    @Test
-    public void editFailPhoneNumber() throws Exception {
-        loginAdmin();
-        int userIdEdit = ApiTestUtils.generateUserIdEditSuccess();
-        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTOFailPhoneNumber();
-        User toEdit = ApiTestUtils.generateUserToEdit(modifyUserDTO);
+    @Test(expected = UserAlreadyExistsException.class)
+    public void editFailPhoneNumber() {
+        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTO("phone");
+        User toEdit = ApiTestUtils.generateUser(modifyUserDTO);
 
-        given(userMapper.toUser(modifyUserDTO)).willReturn(toEdit);
-        given(userService.edit(toEdit)).willThrow(UserAlreadyExistsException.class);
+        when(userMapper.toUser(modifyUserDTO)).thenReturn(toEdit);
+        when(userService.edit(toEdit)).thenThrow(UserAlreadyExistsException.class);
 
-        String json = ApiTestUtils.json(modifyUserDTO);
-
-        mockMvc.perform(put(basePath + "/edit/" + userIdEdit)
-                        .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        userController.edit(modifyUserDTO, modifyUserDTO.getId());
+        verify(userService).edit(toEdit);
+        verifyNoMoreInteractions(userService);
     }
 
-    @Test
-    public void editFailEmailAndPhoneNumber() throws Exception {
-        loginAdmin();
-        int userIdEdit = ApiTestUtils.generateUserIdEditSuccess();
-        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTOFailEmailAndPhoneNumber();
-        User toEdit = ApiTestUtils.generateUserToEdit(modifyUserDTO);
+    @Test(expected = UserAlreadyExistsException.class)
+    public void editFailEmailAndPhoneNumber() {
+        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTO("emailandphone");
+        User toEdit = ApiTestUtils.generateUser(modifyUserDTO);
 
-        given(userMapper.toUser(modifyUserDTO)).willReturn(toEdit);
-        given(userService.edit(toEdit)).willThrow(UserAlreadyExistsException.class);
+        when(userMapper.toUser(modifyUserDTO)).thenReturn(toEdit);
+        when(userService.edit(toEdit)).thenThrow(UserAlreadyExistsException.class);
 
-        String json = ApiTestUtils.json(modifyUserDTO);
-
-        mockMvc.perform(put(basePath + "/edit/" + userIdEdit)
-                        .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        userController.edit(modifyUserDTO, modifyUserDTO.getId());
+        verify(userService).edit(toEdit);
+        verifyNoMoreInteractions(userService);
     }
 
-    @Test
-    public void editFailId() throws Exception {
-        loginAdmin();
-        int userIdEdit = ApiTestUtils.generateUserIdEditFail();
-        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTOFailEmailAndPhoneNumber();
-        User toEdit = ApiTestUtils.generateUserToEdit(modifyUserDTO);
+    @Test(expected = UserNotFoundException.class)
+    public void editFailId() {
+        ModifyUserDTO modifyUserDTO = ApiTestUtils.generateModifyUserDTO("id");
+        User toEdit = ApiTestUtils.generateUser(modifyUserDTO);
 
-        given(userMapper.toUser(modifyUserDTO)).willReturn(toEdit);
-        given(userService.edit(toEdit)).willThrow(UserNotFoundException.class);
+        when(userMapper.toUser(modifyUserDTO)).thenReturn(toEdit);
+        when(userService.edit(toEdit)).thenThrow(UserNotFoundException.class);
 
-        String json = ApiTestUtils.json(modifyUserDTO);
-
-        mockMvc.perform(put(basePath + "/edit/" + userIdEdit)
-                        .content(json).contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+        userController.edit(modifyUserDTO, modifyUserDTO.getId());
+        verify(userService).edit(toEdit);
+        verifyNoMoreInteractions(userService);
     }
 
     @Test
     @Transactional
-    public void deleteSuccess() throws Exception {
-        loginAdmin();
-        int userId = ApiTestUtils.generateUserIdDeleteSuccess();
+    public void deleteSuccess() {
+        int userId = ApiTestUtils.generateUserId(true);
 
-        mockMvc.perform(delete(basePath + "/" + userId)).andExpect(status().isOk());
+        when(userService.delete(userId)).thenReturn(true);
+
+        ResponseEntity<?> response = userController.delete(userId);
+        verify(userService).delete(userId);
+        verifyNoMoreInteractions(userService);
+        assertEquals(200, response.getStatusCodeValue());
+    }
+
+    @Test(expected = UserNotFoundException.class)
+    public void deleteFail() {
+        int userId = ApiTestUtils.generateUserId(false);
+
+        when(userService.delete(userId)).thenThrow(UserNotFoundException.class);
+
+        userController.delete(userId);
+        verify(userService).delete(userId);
+        verifyNoMoreInteractions(userService);
     }
 
     @Test
-    public void deleteFail() throws Exception {
-        loginAdmin();
-        int userId = ApiTestUtils.generateUserIdDeleteFail();
-
-        mockMvc.perform(delete(basePath + "/" + userId)).andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void getByIdSuccess() throws Exception {
-        loginAdmin();
-        int userId = ApiTestUtils.generateUserIdGetBySuccess();
+    public void getByIdSuccess() {
+        int userId = ApiTestUtils.generateUserId(true);
         User found = ApiTestUtils.generateUserFoundById(userId);
-        UserDTO foundDTO = ApiTestUtils.generateUserDTOFoundById(found);
+        UserDTO foundDTO = ApiTestUtils.generateUserDTOFoundById(userId);
 
-        given(userMapper.toUserDTO(found)).willReturn(foundDTO);
-        given(userService.getByIdThrowsException(userId)).willReturn(found);
+        when(userService.getByIdThrowsException(userId)).thenReturn(found);
+        when(userMapper.toUserDTO(found)).thenReturn(foundDTO);
 
-        mockMvc.perform(get(basePath + "/" + userId))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id", is(found.getId())));
+        ResponseEntity<UserDTO> response = userController.getById(userId);
+        verify(userService).getByIdThrowsException(userId);
+        verifyNoMoreInteractions(userService);
+        assertNotNull(response.getBody());
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(foundDTO.getId(), response.getBody().getId());
+    }
+
+    @Test(expected = UserNotFoundException.class)
+    public void getByIdFail() {
+        int userId = ApiTestUtils.generateUserId(false);
+
+        when(userService.getByIdThrowsException(userId)).thenThrow(UserNotFoundException.class);
+
+        userController.getById(userId);
+        verify(userService).getByIdThrowsException(userId);
+        verifyNoMoreInteractions(userService);
     }
 
     @Test
-    public void getByIdFail() throws Exception {
-        loginAdmin();
-        int userId = ApiTestUtils.generateUserIdGetByFail();
-
-        given(userService.getByIdThrowsException(userId)).willThrow(UserNotFoundException.class);
-
-        mockMvc.perform(get(basePath + "/" + userId))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void getAllSuccess() throws Exception {
+    public void getAllSuccess() {
         int listSize = ApiTestUtils.generateUserListSize();
         List<User> users = ApiTestUtils.generateUserList(listSize);
+        List<UserDTO> userDTOList = ApiTestUtils.generateUserDTOList(users);
 
-        given(userService.getAll()).willReturn(users);
+        when(userService.getAll()).thenReturn(users);
+        when(userMapper.toUserDTOList(users)).thenReturn(userDTOList);
 
-        mockMvc.perform(get(basePath))
-                .andExpect(jsonPath("$", hasSize(listSize)))
-                .andExpect(status().isOk());
+        ResponseEntity<List<UserDTO>> response = userController.getAll();
+        verify(userService).getAll();
+        verifyNoMoreInteractions(userService);
+        assertNotNull(response.getBody());
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(userDTOList.size(), response.getBody().size());
     }
-
-
-    private void loginUser() {
-        UserDetailsImpl user = ApiTestUtils.generateUserDetailsRoleUser();
-        SecurityContextHolder.getContext().setAuthentication(ApiTestUtils.generateAuthentication(user));
-    }
-
-    private void loginAdmin() {
-        UserDetailsImpl user = ApiTestUtils.generateUserDetailsRoleAdmin();
-        SecurityContextHolder.getContext().setAuthentication(ApiTestUtils.generateAuthentication(user));
-    }
-
 }
