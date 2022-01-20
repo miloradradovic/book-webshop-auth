@@ -62,8 +62,6 @@ public class UserControllerUnitTests {
         when(userMapper.toUserDTO(registered)).thenReturn(userDTO);
 
         ResponseEntity<UserDTO> response = userController.create(registerDataDTO);
-        verify(userService).createThrowsException(toCreate);
-        verifyNoMoreInteractions(userService);
         assertNotNull(response.getBody());
         assertEquals(registered.getId(), response.getBody().getId());
         assertEquals(201, response.getStatusCodeValue());
@@ -82,8 +80,6 @@ public class UserControllerUnitTests {
         when(userMapper.toUserDTO(registered)).thenReturn(userDTO);
 
         ResponseEntity<UserDTO> response = userController.create(registerDataDTO);
-        verify(userService).createThrowsException(toCreate);
-        verifyNoMoreInteractions(userService);
         assertNotNull(response.getBody());
         assertEquals(registered.getId(), response.getBody().getId());
         assertEquals(201, response.getStatusCodeValue());
@@ -98,8 +94,6 @@ public class UserControllerUnitTests {
         when(userService.createThrowsException(toCreate)).thenThrow(UserAlreadyExistsException.class);
 
         userController.create(registerDataDTO);
-        verify(userService).createThrowsException(toCreate);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -111,8 +105,6 @@ public class UserControllerUnitTests {
         when(userService.createThrowsException(toCreate)).thenThrow(UserAlreadyExistsException.class);
 
         userController.create(registerDataDTO);
-        verify(userService).createThrowsException(toCreate);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -124,8 +116,6 @@ public class UserControllerUnitTests {
         when(userService.createThrowsException(toCreate)).thenThrow(UserAlreadyExistsException.class);
 
         userController.create(registerDataDTO);
-        verify(userService).createThrowsException(toCreate);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test
@@ -141,8 +131,6 @@ public class UserControllerUnitTests {
         when(userMapper.toUserDTO(edited)).thenReturn(userDTO);
 
         ResponseEntity<UserDTO> response = userController.edit(modifyUserDTO, modifyUserDTO.getId());
-        verify(userService).edit(toEdit);
-        verifyNoMoreInteractions(userService);
         assertNotNull(response.getBody());
         assertEquals(200, response.getStatusCodeValue());
     }
@@ -156,8 +144,6 @@ public class UserControllerUnitTests {
         when(userService.edit(toEdit)).thenThrow(UserAlreadyExistsException.class);
 
         userController.edit(modifyUserDTO, modifyUserDTO.getId());
-        verify(userService).edit(toEdit);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -169,8 +155,6 @@ public class UserControllerUnitTests {
         when(userService.edit(toEdit)).thenThrow(UserAlreadyExistsException.class);
 
         userController.edit(modifyUserDTO, modifyUserDTO.getId());
-        verify(userService).edit(toEdit);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -182,8 +166,6 @@ public class UserControllerUnitTests {
         when(userService.edit(toEdit)).thenThrow(UserAlreadyExistsException.class);
 
         userController.edit(modifyUserDTO, modifyUserDTO.getId());
-        verify(userService).edit(toEdit);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test(expected = UserNotFoundException.class)
@@ -195,8 +177,6 @@ public class UserControllerUnitTests {
         when(userService.edit(toEdit)).thenThrow(UserNotFoundException.class);
 
         userController.edit(modifyUserDTO, modifyUserDTO.getId());
-        verify(userService).edit(toEdit);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test
@@ -207,8 +187,6 @@ public class UserControllerUnitTests {
         when(userService.delete(userId)).thenReturn(true);
 
         ResponseEntity<?> response = userController.delete(userId);
-        verify(userService).delete(userId);
-        verifyNoMoreInteractions(userService);
         assertEquals(200, response.getStatusCodeValue());
     }
 
@@ -219,8 +197,6 @@ public class UserControllerUnitTests {
         when(userService.delete(userId)).thenThrow(UserNotFoundException.class);
 
         userController.delete(userId);
-        verify(userService).delete(userId);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test
@@ -233,8 +209,6 @@ public class UserControllerUnitTests {
         when(userMapper.toUserDTO(found)).thenReturn(foundDTO);
 
         ResponseEntity<UserDTO> response = userController.getById(userId);
-        verify(userService).getByIdThrowsException(userId);
-        verifyNoMoreInteractions(userService);
         assertNotNull(response.getBody());
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(foundDTO.getId(), response.getBody().getId());
@@ -247,8 +221,6 @@ public class UserControllerUnitTests {
         when(userService.getByIdThrowsException(userId)).thenThrow(UserNotFoundException.class);
 
         userController.getById(userId);
-        verify(userService).getByIdThrowsException(userId);
-        verifyNoMoreInteractions(userService);
     }
 
     @Test
@@ -261,8 +233,6 @@ public class UserControllerUnitTests {
         when(userMapper.toUserDTOList(users)).thenReturn(userDTOList);
 
         ResponseEntity<List<UserDTO>> response = userController.getAll();
-        verify(userService).getAll();
-        verifyNoMoreInteractions(userService);
         assertNotNull(response.getBody());
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(userDTOList.size(), response.getBody().size());
