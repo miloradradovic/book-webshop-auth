@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +43,8 @@ public class UserServiceUnitTests {
         when(userRepository.findByEmailAndPassword(email, password)).thenReturn(found);
 
         User result = userService.getByEmailAndPassword(email, password);
+        verify(userRepository).findByEmailAndPassword(email, password);
+        verifyNoMoreInteractions(userRepository);
         assertEquals(email, result.getEmail());
         assertEquals(password, result.getPassword());
     }
@@ -56,6 +57,8 @@ public class UserServiceUnitTests {
         when(userRepository.findByEmailAndPassword(email, password)).thenReturn(null);
 
         User result = userService.getByEmailAndPassword(email, password);
+        verify(userRepository).findByEmailAndPassword(email, password);
+        verifyNoMoreInteractions(userRepository);
         assertNull(result);
     }
 
@@ -67,6 +70,8 @@ public class UserServiceUnitTests {
         when(userRepository.findByEmail(email)).thenReturn(found);
 
         User result = userService.getByEmail(email);
+        verify(userRepository).findByEmail(email);
+        verifyNoMoreInteractions(userRepository);
         assertNotNull(result);
         assertEquals(email, result.getEmail());
     }
@@ -78,6 +83,8 @@ public class UserServiceUnitTests {
         when(userRepository.findByEmail(email)).thenReturn(null);
 
         User result = userService.getByEmail(email);
+        verify(userRepository).findByEmail(email);
+        verifyNoMoreInteractions(userRepository);
         assertNull(result);
     }
 
@@ -86,9 +93,11 @@ public class UserServiceUnitTests {
         String email = ServiceTestUtils.generateEmail(true);
         User found = ServiceTestUtils.generateUserFoundBy(email, "", 0, "");
 
-        when(userService.getByEmail(email)).thenReturn(found);
+        when(userRepository.findByEmail(email)).thenReturn(found);
 
         User result = userService.getByEmailThrowsException(email);
+        verify(userRepository).findByEmail(email);
+        verifyNoMoreInteractions(userRepository);
         assertNotNull(result);
         assertEquals(email, result.getEmail());
     }
@@ -97,9 +106,11 @@ public class UserServiceUnitTests {
     public void getByEmailThrowsExceptionFail() {
         String email = ServiceTestUtils.generateEmail(false);
 
-        when(userService.getByEmail(email)).thenReturn(null);
+        when(userRepository.findByEmail(email)).thenReturn(null);
 
         userService.getByEmailThrowsException(email);
+        verify(userRepository).findByEmail(email);
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
@@ -111,6 +122,8 @@ public class UserServiceUnitTests {
         when(userRepository.findByEmailOrPhoneNumber(email, phone)).thenReturn(found);
 
         List<User> result = userService.getByEmailOrPhoneNumber(email, phone);
+        verify(userRepository).findByEmailOrPhoneNumber(email, phone);
+        verifyNoMoreInteractions(userRepository);
         assertNotNull(result);
         assertEquals(found.size(), result.size());
     }
@@ -123,11 +136,12 @@ public class UserServiceUnitTests {
         when(userRepository.findByEmailOrPhoneNumber(email, phone)).thenReturn(new ArrayList<>());
 
         List<User> result = userService.getByEmailOrPhoneNumber(email, phone);
+        verify(userRepository).findByEmailOrPhoneNumber(email, phone);
+        verifyNoMoreInteractions(userRepository);
         assertEquals(0, result.size());
     }
 
     @Test
-    @Transactional
     public void createUserSuccess() {
         User toRegister = ServiceTestUtils.generateUserToRegister("", "ROLE_USER");
         User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
@@ -135,11 +149,12 @@ public class UserServiceUnitTests {
         when(userRepository.save(toRegister)).thenReturn(registered);
 
         User result = userService.create(toRegister);
+        verify(userRepository).save(toRegister);
+        verifyNoMoreInteractions(userRepository);
         assertEquals(registered.getId(), result.getId());
     }
 
     @Test
-    @Transactional
     public void createAdminSuccess() {
         User toRegister = ServiceTestUtils.generateUserToRegister("", "ROLE_ADMIN");
         User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
@@ -147,19 +162,23 @@ public class UserServiceUnitTests {
         when(userRepository.save(toRegister)).thenReturn(registered);
 
         User result = userService.create(toRegister);
+        verify(userRepository).save(toRegister);
+        verifyNoMoreInteractions(userRepository);
         assertEquals(registered.getId(), result.getId());
     }
 
     @Test
-    @Transactional
     public void createThrowsExceptionSuccess() {
         User toRegister = ServiceTestUtils.generateUserToRegister("", "ROLE_USER");
         User registered = ServiceTestUtils.generateRegisteredUser(toRegister);
 
-        when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(new ArrayList<>());
-        when(userService.create(toRegister)).thenReturn(registered);
+        when(userRepository.findByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(new ArrayList<>());
+        when(userRepository.save(toRegister)).thenReturn(registered);
 
         User result = userService.createThrowsException(toRegister);
+        verify(userRepository).findByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        verify(userRepository).save(toRegister);
+        verifyNoMoreInteractions(userRepository);
         assertNotNull(result);
         assertEquals(registered.getId(), result.getId());
     }
@@ -169,9 +188,11 @@ public class UserServiceUnitTests {
         User toRegister = ServiceTestUtils.generateUserToRegister("email", "ROLE_USER");
         List<User> users = ServiceTestUtils.generateUserListFoundBy(toRegister.getEmail(), "");
 
-        when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
+        when(userRepository.findByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
 
         userService.createThrowsException(toRegister);
+        verify(userRepository).findByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -179,9 +200,11 @@ public class UserServiceUnitTests {
         User toRegister = ServiceTestUtils.generateUserToRegister("phone", "ROLE_USER");
         List<User> users = ServiceTestUtils.generateUserListFoundBy("", toRegister.getPhoneNumber());
 
-        when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
+        when(userRepository.findByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
 
         userService.createThrowsException(toRegister);
+        verify(userRepository).findByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -189,9 +212,11 @@ public class UserServiceUnitTests {
         User toRegister = ServiceTestUtils.generateUserToRegister("emailandphone", "ROLE_USER");
         List<User> users = ServiceTestUtils.generateUserListFoundBy(toRegister.getEmail(), toRegister.getPhoneNumber());
 
-        when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
+        when(userRepository.findByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(users);
 
         userService.createThrowsException(toRegister);
+        verify(userRepository).findByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
@@ -201,10 +226,12 @@ public class UserServiceUnitTests {
         User found = ServiceTestUtils.generateUserForDataResponse(response);
 
         when(authService.getCurrentlyLoggedIn()).thenReturn(userDetails);
-        when(userService.getByEmail(userDetails.getUsername())).thenReturn(found);
-        when(userService.getByEmailThrowsException(userDetails.getUsername())).thenReturn(found);
+        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(found);
 
         UserDataResponse userDataResponse = userService.getDataForOrder();
+        verify(authService).getCurrentlyLoggedIn();
+        verify(userRepository).findByEmail(userDetails.getUsername());
+        verifyNoMoreInteractions(authService, userRepository);
         assertNotNull(userDataResponse);
         assertEquals(response.getAddress(), userDataResponse.getAddress());
         assertEquals(response.getPhoneNumber(), userDataResponse.getPhoneNumber());
@@ -216,9 +243,13 @@ public class UserServiceUnitTests {
         String invalidEmail = ServiceTestUtils.generateEmail(false);
         userDetails.setUsername(invalidEmail);
 
-        when(userService.getByEmailThrowsException(userDetails.getUsername())).thenThrow(UserNotFoundException.class);
+        when(authService.getCurrentlyLoggedIn()).thenReturn(userDetails);
+        when(userRepository.findByEmail(userDetails.getUsername())).thenReturn(null);
 
         userService.getDataForOrder();
+        verify(authService).getCurrentlyLoggedIn();
+        verify(userRepository).findByEmail(userDetails.getUsername());
+        verifyNoMoreInteractions(userRepository, authService);
     }
 
     @Test
@@ -229,6 +260,8 @@ public class UserServiceUnitTests {
         when(userRepository.findById(id)).thenReturn(found);
 
         User result = userService.getById(id);
+        verify(userRepository).findById(id);
+        verifyNoMoreInteractions(userRepository);
         assertNotNull(result);
         assertEquals(id, result.getId());
     }
@@ -240,6 +273,8 @@ public class UserServiceUnitTests {
         when(userRepository.findById(id)).thenReturn(null);
 
         User result = userService.getById(id);
+        verify(userRepository).findById(id);
+        verifyNoMoreInteractions(userRepository);
         assertNull(result);
     }
 
@@ -248,9 +283,11 @@ public class UserServiceUnitTests {
         int id = ServiceTestUtils.generateUserId(true);
         User found = ServiceTestUtils.generateUserFoundBy("", "",  id, "");
 
-        when(userService.getById(id)).thenReturn(found);
+        when(userRepository.findById(id)).thenReturn(found);
 
         User result = userService.getByIdThrowsException(id);
+        verify(userRepository).findById(id);
+        verifyNoMoreInteractions(userRepository);
         assertNotNull(result);
         assertEquals(id, result.getId());
     }
@@ -259,9 +296,11 @@ public class UserServiceUnitTests {
     public void getByIdThrowsExceptionFail() {
         int id = ServiceTestUtils.generateUserId(false);
 
-        when(userService.getById(id)).thenReturn(null);
+        when(userRepository.findById(id)).thenReturn(null);
 
         userService.getByIdThrowsException(id);
+        verify(userRepository).findById(id);
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test
@@ -272,22 +311,25 @@ public class UserServiceUnitTests {
         when(userRepository.findAll()).thenReturn(users);
 
         List<User> result = userService.getAll();
+        verify(userRepository).findAll();
+        verifyNoMoreInteractions(userRepository);
         assertNotNull(result);
         assertEquals(listSize, result.size());
     }
 
     @Test
-    @Transactional
     public void editSuccess() {
         User toEdit = ServiceTestUtils.generateUserToEdit("");
         User foundById = ServiceTestUtils.generateUserFoundBy("", "", toEdit.getId(), "");
         User edited = ServiceTestUtils.generateEditedUser(foundById, toEdit);
 
-        when(userService.getById(toEdit.getId())).thenReturn(foundById);
-        when(userService.getByIdThrowsException(toEdit.getId())).thenReturn(foundById);
+        when(userRepository.findById(toEdit.getId())).thenReturn(foundById);
         when(userRepository.save(foundById)).thenReturn(edited);
 
         User result = userService.edit(toEdit);
+        verify(userRepository).findById(toEdit.getId());
+        verify(userRepository).save(foundById);
+        verifyNoMoreInteractions(userRepository);
         assertNotNull(result);
         assertEquals(edited.getId(), result.getId());
         assertEquals(edited.getEmail(), result.getEmail());
@@ -298,9 +340,11 @@ public class UserServiceUnitTests {
     public void editFailId() {
         User toEdit = ServiceTestUtils.generateUserToEdit("id");
 
-        when(userService.getByIdThrowsException(toEdit.getId())).thenThrow(UserNotFoundException.class);
+        when(userRepository.findById(toEdit.getId())).thenReturn(null);
 
         userService.edit(toEdit);
+        verify(userRepository).findById(toEdit.getId());
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -309,11 +353,13 @@ public class UserServiceUnitTests {
         User foundById = ServiceTestUtils.generateUserFoundBy("", "", toEdit.getId(), "");
         User foundByEmail = ServiceTestUtils.generateUserFoundBy(toEdit.getEmail(), "", 0, "");
 
-        when(userService.getById(toEdit.getId())).thenReturn(foundById);
-        when(userService.getByIdThrowsException(toEdit.getId())).thenReturn(foundById);
+        when(userRepository.findById(toEdit.getId())).thenReturn(foundById);
         when(userRepository.findByEmail(toEdit.getEmail())).thenReturn(foundByEmail);
 
         userService.edit(toEdit);
+        verify(userRepository).findById(toEdit.getId());
+        verify(userRepository).findByEmail(toEdit.getEmail());
+        verifyNoMoreInteractions(userRepository);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -322,11 +368,14 @@ public class UserServiceUnitTests {
         User foundById = ServiceTestUtils.generateUserFoundBy("", "", toEdit.getId(), "");
         User foundByPhone = ServiceTestUtils.generateUserFoundBy("", "", 0, toEdit.getPhoneNumber());
 
-        when(userService.getById(toEdit.getId())).thenReturn(foundById);
-        when(userService.getByIdThrowsException(toEdit.getId())).thenReturn(foundById);
+        when(userRepository.findById(toEdit.getId())).thenReturn(foundById);
         when(userRepository.findByEmail(toEdit.getEmail())).thenReturn(null);
         when(userRepository.findByPhoneNumber(toEdit.getPhoneNumber())).thenReturn(foundByPhone);
 
         userService.edit(toEdit);
+        verify(userRepository).findById(toEdit.getId());
+        verify(userRepository).findByEmail(toEdit.getEmail());
+        verify(userRepository).findByPhoneNumber(toEdit.getPhoneNumber());
+        verifyNoMoreInteractions(userRepository);
     }
 }

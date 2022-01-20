@@ -18,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -47,6 +46,9 @@ public class AuthControllerUnitTests {
         when(authService.login(loginData)).thenReturn(jwtToken);
 
         ResponseEntity<TokenDataDTO> response = authController.login(loginDataDTO);
+        verify(userMapper).toLoginData(loginDataDTO);
+        verify(authService).login(loginData);
+        verifyNoMoreInteractions(userMapper, authService);
         assertNotNull(response.getBody());
         assertEquals(jwtToken, response.getBody().getAccessToken());
     }
@@ -60,10 +62,12 @@ public class AuthControllerUnitTests {
         when(authService.login(loginData)).thenThrow(UnauthenticatedException.class);
 
         authController.login(loginDataDTO);
+        verify(userMapper).toLoginData(loginDataDTO);
+        verify(authService).login(loginData);
+        verifyNoMoreInteractions(userMapper, authService);
     }
 
     @Test
-    @Transactional
     public void registerSuccess() {
         RegisterDataDTO registerDataDTO = ApiTestUtils.generateRegisterDataDTO("", "ROLE_USER");
         User toRegister = ApiTestUtils.generateUser(registerDataDTO);
@@ -75,6 +79,10 @@ public class AuthControllerUnitTests {
         when(userMapper.toUserDTO(registered)).thenReturn(userDTO);
 
         ResponseEntity<UserDTO> response = authController.register(registerDataDTO);
+        verify(userMapper).toUser(registerDataDTO);
+        verify(userMapper).toUserDTO(registered);
+        verify(authService).register(toRegister);
+        verifyNoMoreInteractions(userMapper, authService);
         assertNotNull(response.getBody());
         assertEquals(201, response.getStatusCodeValue());
         assertEquals(registered.getId(), response.getBody().getId());
@@ -89,6 +97,9 @@ public class AuthControllerUnitTests {
         when(authService.register(toRegister)).thenThrow(UserAlreadyExistsException.class);
 
         authController.register(registerDataDTO);
+        verify(userMapper).toUser(registerDataDTO);
+        verify(authService).register(toRegister);
+        verifyNoMoreInteractions(userMapper, authService);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -100,6 +111,9 @@ public class AuthControllerUnitTests {
         when(authService.register(toRegister)).thenThrow(UserAlreadyExistsException.class);
 
         authController.register(registerDataDTO);
+        verify(userMapper).toUser(registerDataDTO);
+        verify(authService).register(toRegister);
+        verifyNoMoreInteractions(userMapper, authService);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -111,6 +125,9 @@ public class AuthControllerUnitTests {
         when(authService.register(toRegister)).thenThrow(UserAlreadyExistsException.class);
 
         authController.register(registerDataDTO);
+        verify(userMapper).toUser(registerDataDTO);
+        verify(authService).register(toRegister);
+        verifyNoMoreInteractions(userMapper, authService);
     }
 
     @Test
@@ -122,6 +139,8 @@ public class AuthControllerUnitTests {
         when(authService.refreshToken(tokenDataDTO.getAccessToken())).thenReturn(refreshedToken);
 
         ResponseEntity<TokenDataDTO> response = authController.refresh(tokenDataDTO);
+        verify(authService).refreshToken(tokenDataDTO.getAccessToken());
+        verifyNoMoreInteractions(authService);
         assertNotNull(response.getBody());
         assertEquals(200, response.getStatusCodeValue());
         assertEquals(result.getAccessToken(), response.getBody().getAccessToken());
@@ -134,5 +153,7 @@ public class AuthControllerUnitTests {
         when(authService.refreshToken(tokenDataDTO.getAccessToken())).thenThrow(RefreshTokenFailException.class);
 
         authController.refresh(tokenDataDTO);
+        verify(authService).refreshToken(tokenDataDTO.getAccessToken());
+        verifyNoMoreInteractions(authService);
     }
 }

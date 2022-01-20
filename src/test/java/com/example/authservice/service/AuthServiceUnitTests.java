@@ -18,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,6 +56,9 @@ public class AuthServiceUnitTests {
         when(jwtUtils.generateJwtToken(authenticated)).thenReturn(jwtToken);
 
         String jwtResult = authService.login(loginData);
+        verify(authenticationManager).authenticate(toAuthenticate);
+        verify(jwtUtils).generateJwtToken(authenticated);
+        verifyNoMoreInteractions(authenticationManager, jwtUtils);
         assertEquals(jwtToken, jwtResult);
     }
 
@@ -68,6 +70,8 @@ public class AuthServiceUnitTests {
         when(authenticationManager.authenticate(auth)).thenThrow(UnauthenticatedException.class);
 
         authService.login(loginData);
+        verify(authenticationManager).authenticate(auth);
+        verifyNoMoreInteractions(authenticationManager);
     }
 
     @Test
@@ -78,6 +82,8 @@ public class AuthServiceUnitTests {
         when(jwtUtils.refreshToken(expiredToken)).thenReturn(newToken);
 
         String tokenResult = authService.refreshToken(expiredToken);
+        verify(jwtUtils).refreshToken(expiredToken);
+        verifyNoMoreInteractions(jwtUtils);
         assertEquals(newToken, tokenResult);
     }
 
@@ -88,9 +94,10 @@ public class AuthServiceUnitTests {
         when(jwtUtils.refreshToken(expiredToken)).thenReturn(null);
 
         authService.refreshToken(expiredToken);
+        verify(jwtUtils).refreshToken(expiredToken);
+        verifyNoMoreInteractions(jwtUtils);
     }
     @Test
-    @Transactional
     public void registerSuccess() {
         User toRegister = ServiceTestUtils.generateUserToRegister("", "ROLE_USER");
         String rawPass = toRegister.getPassword();
@@ -102,6 +109,10 @@ public class AuthServiceUnitTests {
         when(userService.createThrowsException(toRegister)).thenReturn(registered);
 
         User result = authService.register(toRegister);
+        verify(userService).getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        verify(userService).createThrowsException(toRegister);
+        verify(passwordEncoder).encode(rawPass);
+        verifyNoMoreInteractions(userService, passwordEncoder);
         assertEquals(registered.getId(), result.getId());
     }
 
@@ -113,6 +124,8 @@ public class AuthServiceUnitTests {
         when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(foundUsers);
 
         authService.register(toRegister);
+        verify(userService).getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        verifyNoMoreInteractions(userService);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -123,6 +136,8 @@ public class AuthServiceUnitTests {
         when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(foundUsers);
 
         authService.register(toRegister);
+        verify(userService).getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        verifyNoMoreInteractions(userService);
     }
 
     @Test(expected = UserAlreadyExistsException.class)
@@ -133,5 +148,7 @@ public class AuthServiceUnitTests {
         when(userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber())).thenReturn(foundUsers);
 
         authService.register(toRegister);
+        verify(userService).getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
+        verifyNoMoreInteractions(userService);
     }
 }
