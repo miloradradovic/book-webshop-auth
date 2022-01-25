@@ -5,7 +5,6 @@ import com.example.authservice.dto.RegisterDataDTO;
 import com.example.authservice.dto.TokenDataDTO;
 import com.example.authservice.dto.UserDTO;
 import com.example.authservice.mapper.UserMapper;
-import com.example.authservice.model.LoginData;
 import com.example.authservice.model.User;
 import com.example.authservice.service.impl.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
