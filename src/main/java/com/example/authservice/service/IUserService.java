@@ -19,5 +19,6 @@ public interface IUserService {
     List<User> getAll();
     User edit(User toEdit);
     boolean delete(int userId);
+    User getByCurrentlyLoggedIn();
 
 }

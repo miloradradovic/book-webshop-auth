@@ -119,4 +119,9 @@ public class UserService implements IUserService {
             throw new DeleteUserFailException();
         }
     }
+
+    @Override
+    public User getByCurrentlyLoggedIn() {
+        return getByEmailThrowsException(authService.getCurrentlyLoggedIn().getUsername());
+    }
 }
