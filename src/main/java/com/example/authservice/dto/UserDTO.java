@@ -21,6 +21,6 @@ public class UserDTO {
     private String surname;
     private String phoneNumber;
     private String address;
-    public List<String> roles = new ArrayList<>();
+    private List<String> roles = new ArrayList<>();
 
 }

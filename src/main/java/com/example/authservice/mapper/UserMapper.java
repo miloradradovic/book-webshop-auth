@@ -14,7 +14,6 @@ import java.util.List;
 @Component
 public class UserMapper {
 
-    // TODO mapping methods
     public User toUser(ModifyUserDTO modifyUserDTO) {
         return new User(modifyUserDTO.getId(), modifyUserDTO.getEmail(), modifyUserDTO.getPassword(), modifyUserDTO.getName(),
                 modifyUserDTO.getSurname(), modifyUserDTO.getPhoneNumber(), modifyUserDTO.getAddress());

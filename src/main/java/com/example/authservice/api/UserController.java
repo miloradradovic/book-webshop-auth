@@ -52,7 +52,7 @@ public class UserController {
 
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<?> delete(@PathVariable int userId) {
+    public ResponseEntity<UserDTO> delete(@PathVariable int userId) {
         userService.delete(userId);
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -12,7 +12,6 @@ import com.example.authservice.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -56,7 +55,7 @@ public class UserService implements IUserService {
     @Override
     public User createThrowsException(User user) {
         List<User> found = getByEmailOrPhoneNumber(user.getEmail(), user.getPhoneNumber());
-        if (found.size() != 0) {
+        if (!found.isEmpty()) {
             throw new UserAlreadyExistsException();
         }
         User created = create(user);
@@ -95,15 +94,12 @@ public class UserService implements IUserService {
     @Override
     public User edit(User toEdit) {
         User found = getByIdThrowsException(toEdit.getId());
-        if (!toEdit.getEmail().equals(found.getEmail())) {
-            if (userRepository.findByEmail(toEdit.getEmail()) != null) {
-                throw new UserAlreadyExistsException();
-            }
+        if (!toEdit.getEmail().equals(found.getEmail()) && userRepository.findByEmail(toEdit.getEmail()) != null) {
+            throw new UserAlreadyExistsException();
         }
-        if (!toEdit.getPhoneNumber().equals(found.getPhoneNumber())) {
-            if (userRepository.findByPhoneNumber(toEdit.getPhoneNumber()) != null) {
-                throw new UserAlreadyExistsException();
-            }
+        if (!toEdit.getPhoneNumber().equals(found.getPhoneNumber()) &&
+                userRepository.findByPhoneNumber(toEdit.getPhoneNumber()) != null) {
+            throw new UserAlreadyExistsException();
         }
         found.setAddress(toEdit.getAddress());
         found.setEmail(toEdit.getEmail());

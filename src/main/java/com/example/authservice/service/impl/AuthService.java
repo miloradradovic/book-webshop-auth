@@ -56,7 +56,7 @@ public class AuthService implements IAuthService {
     @Override
     public User register(User toRegister) {
         List<User> alreadyRegistered = userService.getByEmailOrPhoneNumber(toRegister.getEmail(), toRegister.getPhoneNumber());
-        if (alreadyRegistered.size() != 0) {
+        if (!alreadyRegistered.isEmpty()) {
             throw new UserAlreadyExistsException();
         }
         toRegister.setPassword(passwordEncoder.encode(toRegister.getPassword()));

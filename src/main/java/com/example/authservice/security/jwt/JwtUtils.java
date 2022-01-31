@@ -2,7 +2,6 @@ package com.example.authservice.security.jwt;
 
 import com.example.authservice.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,12 +25,9 @@ public class JwtUtils {
         try {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
-        } catch (ExpiredJwtException e) {
-            System.out.println("Expired");
         } catch (Exception exception) {
-            exception.printStackTrace();
+            return false;
         }
-        return false;
     }
 
     public String generateJwtToken(Authentication authentication) {
@@ -51,19 +47,17 @@ public class JwtUtils {
     }
 
     public String refreshToken(String accessToken) {
-        String refreshedToken;
         try {
             final Claims claims = this.getAllClaimsFromToken(accessToken);
             claims.setIssuedAt(new Date());
-            refreshedToken = Jwts.builder()
+            return Jwts.builder()
                     .setClaims(claims)
                     .setExpiration(new Date((new Date()).getTime() +
                             jwtExpirationMs))
                     .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
         } catch (Exception e) {
-            refreshedToken = null;
+            return null;
         }
-        return refreshedToken;
     }
 
     public String getEmailFromJwtToken(String token) {
@@ -81,15 +75,9 @@ public class JwtUtils {
     }
 
     private Claims getAllClaimsFromToken(String token) {
-        Claims claims;
-        try {
-            claims = Jwts.parser()
+        return Jwts.parser()
                     .setSigningKey(jwtSecret)
                     .parseClaimsJws(token)
                     .getBody();
-        } catch (Exception e) {
-            claims = null;
-        }
-        return claims;
     }
 }
