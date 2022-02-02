@@ -72,7 +72,7 @@ public class UserController {
     }
 
     @GetMapping("currently-logged-in")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER') || hasRole('ROLE_ADMIN')")
     public ResponseEntity<UserDTO> getCurrentlyLoggedIn() {
         User found = userService.getByCurrentlyLoggedIn();
         return new ResponseEntity<>(userMapper.toUserDTO(found), HttpStatus.OK);

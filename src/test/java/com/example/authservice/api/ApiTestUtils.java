@@ -76,15 +76,15 @@ public class ApiTestUtils {
     public static ModifyUserDTO generateModifyUserDTO(String success) {
         switch (success) {
             case "":
-                return new ModifyUserDTO(1, "emailnew@email.com", "Dummypassword123", "Name", "Surname", "Changed phone", "Changed address");
+                return new ModifyUserDTO(1, "emailnew@email.com", "Dummypassword123", "Name", "Surname", "Changed phone", "Changed address", new ArrayList<>());
             case "id":
-                return new ModifyUserDTO(-1, "emailnew@email.com", "Dummypassword123", "Name", "Surname", "Changed phone", "Changed address");
+                return new ModifyUserDTO(-1, "emailnew@email.com", "Dummypassword123", "Name", "Surname", "Changed phone", "Changed address", new ArrayList<>());
             case "email":
-                return new ModifyUserDTO(1, "admin@admin.com", "dummypassword", "Name", "Surname", "phone1", "address1");
+                return new ModifyUserDTO(1, "admin@admin.com", "dummypassword", "Name", "Surname", "phone1", "address1", new ArrayList<>());
             case "phone":
-                return new ModifyUserDTO(1, "email1@email.com", "dummypassword", "Name", "Surname", "admin", "address1");
+                return new ModifyUserDTO(1, "email1@email.com", "dummypassword", "Name", "Surname", "admin", "address1", new ArrayList<>());
             default:  // email and phone
-                return new ModifyUserDTO(1, "admin@admin.com", "dummypassword", "Name", "Surname", "admin", "address1");
+                return new ModifyUserDTO(1, "admin@admin.com", "dummypassword", "Name", "Surname", "admin", "address1", new ArrayList<>());
         }
     }
 

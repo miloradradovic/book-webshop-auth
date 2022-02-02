@@ -8,6 +8,8 @@ import lombok.Setter;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -36,4 +38,6 @@ public class ModifyUserDTO {
 
     @NotBlank(message = "Address can't be blank!")
     private String address;
+
+    private List<String> roles = new ArrayList<>();
 }

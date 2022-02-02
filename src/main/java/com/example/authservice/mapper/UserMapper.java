@@ -16,7 +16,7 @@ public class UserMapper {
 
     public User toUser(ModifyUserDTO modifyUserDTO) {
         return new User(modifyUserDTO.getId(), modifyUserDTO.getEmail(), modifyUserDTO.getPassword(), modifyUserDTO.getName(),
-                modifyUserDTO.getSurname(), modifyUserDTO.getPhoneNumber(), modifyUserDTO.getAddress());
+                modifyUserDTO.getSurname(), modifyUserDTO.getPhoneNumber(), modifyUserDTO.getAddress(), modifyUserDTO.getRoles());
     }
 
     public User toUser(RegisterDataDTO registerDataDTO) {

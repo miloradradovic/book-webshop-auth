@@ -10,6 +10,7 @@ import com.example.authservice.repository.UserRepository;
 import com.example.authservice.security.UserDetailsImpl;
 import com.example.authservice.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,9 @@ public class UserService implements IUserService {
 
     @Autowired
     AuthService authService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Override
     public User getByEmailAndPassword(String email, String password) {
@@ -94,6 +98,7 @@ public class UserService implements IUserService {
     @Override
     public User edit(User toEdit) {
         User found = getByIdThrowsException(toEdit.getId());
+
         if (!toEdit.getEmail().equals(found.getEmail()) && userRepository.findByEmail(toEdit.getEmail()) != null) {
             throw new UserAlreadyExistsException();
         }
@@ -106,6 +111,12 @@ public class UserService implements IUserService {
         found.setName(toEdit.getName());
         found.setSurname(toEdit.getSurname());
         found.setPhoneNumber(toEdit.getPhoneNumber());
+        found.setRoles(toEdit.getRoles());
+
+        if (!toEdit.getPassword().equals("") &&
+                toEdit.getPassword().matches("(?=(.*[0-9]))(?=.*[a-z])(?=(.*[A-Z]))(?=(.*)).{8,}")) {
+            found.setPassword(passwordEncoder.encode(toEdit.getPassword()));
+        }
 
         return userRepository.save(found);
     }
