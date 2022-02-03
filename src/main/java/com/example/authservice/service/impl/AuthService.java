@@ -2,6 +2,7 @@ package com.example.authservice.service.impl;
 
 import com.example.authservice.exceptions.*;
 import com.example.authservice.model.LoginData;
+import com.example.authservice.model.TokenData;
 import com.example.authservice.model.User;
 import com.example.authservice.security.UserDetailsImpl;
 import com.example.authservice.security.jwt.JwtUtils;
@@ -32,25 +33,28 @@ public class AuthService implements IAuthService {
     UserService userService;
 
     @Override
-    public String login(LoginData loginData) {
+    public TokenData login(LoginData loginData) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginData.getEmail(), loginData.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            return jwtUtils.generateJwtToken(authentication);
+            String accessToken = jwtUtils.generateAccessToken(authentication);
+            String refreshToken = jwtUtils.generateRefreshToken(authentication);
+            return new TokenData(accessToken, refreshToken);
         } catch (Exception e) {
             throw new UnauthenticatedException();
         }
     }
 
     @Override
-    public String refreshToken(String accessToken) {
-        String newToken = jwtUtils.refreshToken(accessToken);
-        if (newToken == null) {
+    public TokenData refreshToken(String refreshToken) {
+        String newAccessToken = jwtUtils.refreshToken(refreshToken);
+        String newRefreshToken = jwtUtils.refreshToken(newAccessToken);
+        if (newAccessToken == null || newRefreshToken == null) {
             throw new RefreshTokenFailException();
         }
-        return newToken;
+        return new TokenData(newAccessToken, newRefreshToken);
     }
 
     @Override

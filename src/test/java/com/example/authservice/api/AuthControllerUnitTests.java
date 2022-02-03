@@ -9,6 +9,7 @@ import com.example.authservice.exceptions.UnauthenticatedException;
 import com.example.authservice.exceptions.UserAlreadyExistsException;
 import com.example.authservice.mapper.UserMapper;
 import com.example.authservice.model.LoginData;
+import com.example.authservice.model.TokenData;
 import com.example.authservice.model.User;
 import com.example.authservice.service.impl.AuthService;
 import org.junit.Test;
@@ -43,7 +44,7 @@ public class AuthControllerUnitTests {
         String jwtToken = ApiTestUtils.generateJwtTokenRoleUser();
 
         when(userMapper.toLoginData(loginDataDTO)).thenReturn(loginData);
-        when(authService.login(loginData)).thenReturn(jwtToken);
+        when(authService.login(loginData)).thenReturn(new TokenData());
 
         ResponseEntity<TokenDataDTO> response = authController.login(loginDataDTO);
         verify(userMapper).toLoginData(loginDataDTO);
@@ -136,7 +137,7 @@ public class AuthControllerUnitTests {
         String refreshedToken = ApiTestUtils.generateRefreshedJwtToken();
         TokenDataDTO result = ApiTestUtils.generateTokenDataDTO(tokenDataDTO.getEmail(), refreshedToken);
 
-        when(authService.refreshToken(tokenDataDTO.getAccessToken())).thenReturn(refreshedToken);
+        when(authService.refreshToken(tokenDataDTO.getAccessToken())).thenReturn(new TokenData());
 
         ResponseEntity<TokenDataDTO> response = authController.refresh(tokenDataDTO);
         verify(authService).refreshToken(tokenDataDTO.getAccessToken());

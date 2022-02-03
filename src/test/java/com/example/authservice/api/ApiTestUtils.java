@@ -56,9 +56,9 @@ public class ApiTestUtils {
 
     public static TokenDataDTO generateTokenDataDTO(boolean success) {
         if (success) {
-            return new TokenDataDTO("email1@email.com", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlbWFpbDFAZW1haWwuY29tIiwiaWF0IjoxNjQxOTAwNTI4LCJleHAiOjE2NDE5MDIzMjgsInJvbGUiOiJST0xFX1VTRVIifQ.APLX1qDrDXYJ8w8t-j1cVQqCQbqklb2lhPtvGf8uq4CotcJtOABF-RrhASB2Nc6KdBI2lpIx24M54Q4RhYqctg");
+            return new TokenDataDTO("email1@email.com", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlbWFpbDFAZW1haWwuY29tIiwiaWF0IjoxNjQxOTAwNTI4LCJleHAiOjE2NDE5MDIzMjgsInJvbGUiOiJST0xFX1VTRVIifQ.APLX1qDrDXYJ8w8t-j1cVQqCQbqklb2lhPtvGf8uq4CotcJtOABF-RrhASB2Nc6KdBI2lpIx24M54Q4RhYqctg", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlbWFpbDFAZW1haWwuY29tIiwiaWF0IjoxNjQxOTAwNTI4LCJleHAiOjE2NDE5MDIzMjgsInJvbGUiOiJST0xFX1VTRVIifQ.APLX1qDrDXYJ8w8t-j1cVQqCQbqklb2lhPtvGf8uq4CotcJtOABF-RrhASB2Nc6KdBI2lpIx24M54Q4RhYqctg");
         }
-        return new TokenDataDTO("invalidemail@email.com", "invalidtoken");
+        return new TokenDataDTO("invalidemail@email.com", "invalidtoken", "invalidrefresh");
     }
 
     public static String generateRefreshedJwtToken() {
@@ -66,7 +66,7 @@ public class ApiTestUtils {
     }
 
     public static TokenDataDTO generateTokenDataDTO(String email, String token) {
-        return new TokenDataDTO(email, token);
+        return new TokenDataDTO(email, token, token);
     }
 
     public static UserDataResponse generateUserDataResponse() {

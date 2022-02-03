@@ -4,6 +4,7 @@ import com.example.authservice.exceptions.RefreshTokenFailException;
 import com.example.authservice.exceptions.UnauthenticatedException;
 import com.example.authservice.exceptions.UserAlreadyExistsException;
 import com.example.authservice.model.LoginData;
+import com.example.authservice.model.TokenData;
 import com.example.authservice.model.User;
 import com.example.authservice.security.UserDetailsImpl;
 import com.example.authservice.security.jwt.JwtUtils;
@@ -53,13 +54,13 @@ public class AuthServiceUnitTests {
         String jwtToken = ServiceTestUtils.generateJwtToken(true);
 
         when(authenticationManager.authenticate(toAuthenticate)).thenReturn(authenticated);
-        when(jwtUtils.generateJwtToken(authenticated)).thenReturn(jwtToken);
+        when(jwtUtils.generateAccessToken(authenticated)).thenReturn(jwtToken);
 
-        String jwtResult = authService.login(loginData);
+        TokenData jwtResult = authService.login(loginData);
         verify(authenticationManager).authenticate(toAuthenticate);
-        verify(jwtUtils).generateJwtToken(authenticated);
+        verify(jwtUtils).generateAccessToken(authenticated);
         verifyNoMoreInteractions(authenticationManager, jwtUtils);
-        assertEquals(jwtToken, jwtResult);
+        assertEquals(jwtToken, jwtResult.getAccessToken());
     }
 
     @Test(expected = UnauthenticatedException.class)
@@ -81,10 +82,10 @@ public class AuthServiceUnitTests {
 
         when(jwtUtils.refreshToken(expiredToken)).thenReturn(newToken);
 
-        String tokenResult = authService.refreshToken(expiredToken);
+        TokenData tokenResult = authService.refreshToken(expiredToken);
         verify(jwtUtils).refreshToken(expiredToken);
         verifyNoMoreInteractions(jwtUtils);
-        assertEquals(newToken, tokenResult);
+        assertEquals(newToken, tokenResult.getAccessToken());
     }
 
     @Test(expected = RefreshTokenFailException.class)

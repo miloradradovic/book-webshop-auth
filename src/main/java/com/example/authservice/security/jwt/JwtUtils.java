@@ -1,6 +1,5 @@
 package com.example.authservice.security.jwt;
 
-import com.example.authservice.exceptions.InvalidJwtException;
 import com.example.authservice.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -27,11 +26,11 @@ public class JwtUtils {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
         } catch (Exception exception) {
-            throw new InvalidJwtException();
+            return false;
         }
     }
 
-    public String generateJwtToken(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
 
         UserDetailsImpl userDetails = (UserDetailsImpl)
                 authentication.getPrincipal();
@@ -43,6 +42,22 @@ public class JwtUtils {
                 setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() +
                         jwtExpirationMs))
+                .claim("role", role)
+                .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+
+        UserDetailsImpl userDetails = (UserDetailsImpl)
+                authentication.getPrincipal();
+        String role = "";
+        for (GrantedAuthority authority : userDetails.getAuthorities()) {
+            role = authority.getAuthority();
+        }
+        return Jwts.builder().setSubject((userDetails.getUsername())).
+                setIssuedAt(new Date())
+                .setExpiration(new Date((new Date()).getTime() +
+                        jwtExpirationMs*2L))
                 .claim("role", role)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret).compact();
     }

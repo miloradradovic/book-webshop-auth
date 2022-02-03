@@ -5,6 +5,7 @@ import com.example.authservice.dto.RegisterDataDTO;
 import com.example.authservice.dto.TokenDataDTO;
 import com.example.authservice.dto.UserDTO;
 import com.example.authservice.mapper.UserMapper;
+import com.example.authservice.model.TokenData;
 import com.example.authservice.model.User;
 import com.example.authservice.service.impl.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +29,14 @@ public class AuthController {
 
     @PostMapping("log-in")
     public ResponseEntity<TokenDataDTO> login(@RequestBody @Valid LoginDataDTO loginDataDTO) {
-        String token = authService.login(userMapper.toLoginData(loginDataDTO));
-        return new ResponseEntity<>(new TokenDataDTO(loginDataDTO.getEmail(), token), HttpStatus.OK);
+        TokenData tokens = authService.login(userMapper.toLoginData(loginDataDTO));
+        return new ResponseEntity<>(new TokenDataDTO(loginDataDTO.getEmail(), tokens.getAccessToken(), tokens.getRefreshToken()), HttpStatus.OK);
     }
 
     @PostMapping("refresh")
     public ResponseEntity<TokenDataDTO> refresh(@RequestBody TokenDataDTO tokenDataDTO) {
-        String token = authService.refreshToken(tokenDataDTO.getAccessToken());
-        return new ResponseEntity<>(new TokenDataDTO(tokenDataDTO.getEmail(), token), HttpStatus.OK);
+        TokenData token = authService.refreshToken(tokenDataDTO.getRefreshToken());
+        return new ResponseEntity<>(new TokenDataDTO(tokenDataDTO.getEmail(), token.getAccessToken(), token.getRefreshToken()), HttpStatus.OK);
     }
 
     @PostMapping("register")

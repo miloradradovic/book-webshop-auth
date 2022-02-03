@@ -18,8 +18,10 @@ public class TokenDataDTO {
     @Email(message = "Invalid email!")
     private String email;
 
-    @NotBlank(message = "Token can't be blank")
     private String accessToken;
+
+    @NotBlank(message = "Refresh token can't be blank!")
+    private String refreshToken;
 
     public TokenDataDTO(String token) {
         this.accessToken = token;
