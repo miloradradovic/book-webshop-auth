@@ -42,7 +42,7 @@ public class UserController {
         return new ResponseEntity<>(userMapper.toUserDTO(created), HttpStatus.CREATED);
     }
 
-    @PutMapping("/edit/{userId}")
+    @PutMapping("/{userId}")
     @PreAuthorize("hasRole('ROLE_ADMIN') || hasRole('ROLE_USER')")
     public ResponseEntity<UserDTO> edit(@RequestBody @Valid ModifyUserDTO modifyUserDTO, @PathVariable int userId) {
         modifyUserDTO.setId(userId);

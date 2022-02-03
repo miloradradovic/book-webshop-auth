@@ -1,5 +1,6 @@
 package com.example.authservice.security.jwt;
 
+import com.example.authservice.exceptions.InvalidJwtException;
 import com.example.authservice.security.UserDetailsImpl;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -26,7 +27,7 @@ public class JwtUtils {
             Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(authToken);
             return true;
         } catch (Exception exception) {
-            return false;
+            throw new InvalidJwtException();
         }
     }
 

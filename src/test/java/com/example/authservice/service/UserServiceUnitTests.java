@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,9 @@ public class UserServiceUnitTests {
 
     @Mock
     private AuthService authService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @Test
     public void getByEmailAndPasswordSuccess() {
