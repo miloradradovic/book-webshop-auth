@@ -52,15 +52,19 @@ public class AuthServiceUnitTests {
         UserDetailsImpl userDetails = ServiceTestUtils.generateUserDetails();
         Authentication authenticated = ServiceTestUtils.generateAuthentication(userDetails);
         String jwtToken = ServiceTestUtils.generateJwtToken(true);
+        String refreshToken = ServiceTestUtils.generateRefreshedJwtToken();
 
         when(authenticationManager.authenticate(toAuthenticate)).thenReturn(authenticated);
         when(jwtUtils.generateAccessToken(authenticated)).thenReturn(jwtToken);
+        when(jwtUtils.generateRefreshToken(authenticated)).thenReturn(refreshToken);
 
         TokenData jwtResult = authService.login(loginData);
         verify(authenticationManager).authenticate(toAuthenticate);
         verify(jwtUtils).generateAccessToken(authenticated);
+        verify(jwtUtils).generateRefreshToken(authenticated);
         verifyNoMoreInteractions(authenticationManager, jwtUtils);
         assertEquals(jwtToken, jwtResult.getAccessToken());
+        assertEquals(refreshToken, jwtResult.getRefreshToken());
     }
 
     @Test(expected = UnauthenticatedException.class)
@@ -78,14 +82,18 @@ public class AuthServiceUnitTests {
     @Test
     public void refreshSuccess() {
         String expiredToken = ServiceTestUtils.generateJwtToken(true);
-        String newToken = ServiceTestUtils.generateRefreshedJwtToken();
+        String newAccessToken = ServiceTestUtils.generateRefreshedJwtToken();
+        String newRefreshToken = ServiceTestUtils.generateRefreshedJwtToken();
 
-        when(jwtUtils.refreshToken(expiredToken)).thenReturn(newToken);
+        when(jwtUtils.refreshToken(expiredToken)).thenReturn(newAccessToken);
+        when(jwtUtils.refreshToken(newAccessToken)).thenReturn(newRefreshToken);
 
         TokenData tokenResult = authService.refreshToken(expiredToken);
         verify(jwtUtils).refreshToken(expiredToken);
+        verify(jwtUtils).refreshToken(newAccessToken);
         verifyNoMoreInteractions(jwtUtils);
-        assertEquals(newToken, tokenResult.getAccessToken());
+        assertEquals(newAccessToken, tokenResult.getAccessToken());
+        assertEquals(newRefreshToken, tokenResult.getRefreshToken());
     }
 
     @Test(expected = RefreshTokenFailException.class)

@@ -41,17 +41,18 @@ public class AuthControllerUnitTests {
     public void loginSuccess() {
         LoginDataDTO loginDataDTO = ApiTestUtils.generateLoginDataDTO(true);
         LoginData loginData = ApiTestUtils.generateLoginData(loginDataDTO);
-        String jwtToken = ApiTestUtils.generateJwtTokenRoleUser();
+        TokenData tokens = ApiTestUtils.generateTokenData();
 
         when(userMapper.toLoginData(loginDataDTO)).thenReturn(loginData);
-        when(authService.login(loginData)).thenReturn(new TokenData());
+        when(authService.login(loginData)).thenReturn(tokens);
 
         ResponseEntity<TokenDataDTO> response = authController.login(loginDataDTO);
         verify(userMapper).toLoginData(loginDataDTO);
         verify(authService).login(loginData);
         verifyNoMoreInteractions(userMapper, authService);
         assertNotNull(response.getBody());
-        assertEquals(jwtToken, response.getBody().getAccessToken());
+        assertEquals(tokens.getAccessToken(), response.getBody().getAccessToken());
+        assertEquals(tokens.getRefreshToken(), response.getBody().getRefreshToken());
     }
 
     @Test(expected = UnauthenticatedException.class)
@@ -134,10 +135,10 @@ public class AuthControllerUnitTests {
     @Test
     public void refreshSuccess() {
         TokenDataDTO tokenDataDTO = ApiTestUtils.generateTokenDataDTO(true);
-        String refreshedToken = ApiTestUtils.generateRefreshedJwtToken();
-        TokenDataDTO result = ApiTestUtils.generateTokenDataDTO(tokenDataDTO.getEmail(), refreshedToken);
+        TokenData tokens = ApiTestUtils.generateRefreshedTokenData();
+        TokenDataDTO result = ApiTestUtils.generateTokenDataDTO(tokenDataDTO.getEmail(), tokens.getAccessToken(), tokens.getRefreshToken());
 
-        when(authService.refreshToken(tokenDataDTO.getAccessToken())).thenReturn(new TokenData());
+        when(authService.refreshToken(tokenDataDTO.getAccessToken())).thenReturn(tokens);
 
         ResponseEntity<TokenDataDTO> response = authController.refresh(tokenDataDTO);
         verify(authService).refreshToken(tokenDataDTO.getAccessToken());
@@ -151,7 +152,7 @@ public class AuthControllerUnitTests {
     public void refreshFail() {
         TokenDataDTO tokenDataDTO = ApiTestUtils.generateTokenDataDTO(false);
 
-        when(authService.refreshToken(tokenDataDTO.getAccessToken())).thenThrow(RefreshTokenFailException.class);
+        when(authService.refreshToken(tokenDataDTO.getRefreshToken())).thenThrow(RefreshTokenFailException.class);
 
         authController.refresh(tokenDataDTO);
         verify(authService).refreshToken(tokenDataDTO.getAccessToken());

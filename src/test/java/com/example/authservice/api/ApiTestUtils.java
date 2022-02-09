@@ -3,6 +3,7 @@ package com.example.authservice.api;
 import com.example.authservice.client.UserDataResponse;
 import com.example.authservice.dto.*;
 import com.example.authservice.model.LoginData;
+import com.example.authservice.model.TokenData;
 import com.example.authservice.model.User;
 
 import java.util.ArrayList;
@@ -21,8 +22,9 @@ public class ApiTestUtils {
         return new LoginData(loginDataDTO.getEmail(), loginDataDTO.getPassword());
     }
 
-    public static String generateJwtTokenRoleUser() {
-        return "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlbWFpbDFAZW1haWwuY29tIiwiaWF0IjoxNjQxOTAwNTI4LCJleHAiOjE2NDE5MDIzMjgsInJvbGUiOiJST0xFX1VTRVIifQ.APLX1qDrDXYJ8w8t-j1cVQqCQbqklb2lhPtvGf8uq4CotcJtOABF-RrhASB2Nc6KdBI2lpIx24M54Q4RhYqctg";
+    public static TokenData generateTokenData() {
+        return new TokenData("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlbWFpbDFAZW1haWwuY29tIiwiaWF0IjoxNjQxOTAwNTI4LCJleHAiOjE2NDE5MDIzMjgsInJvbGUiOiJST0xFX1VTRVIifQ.APLX1qDrDXYJ8w8t-j1cVQqCQbqklb2lhPtvGf8uq4CotcJtOABF-RrhASB2Nc6KdBI2lpIx24M54Q4RhYqctg",
+                "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJlbWFpbDFAZW1haWwuY29tIiwiaWF0IjoxNjQxOTAwNTI4LCJleHAiOjE2NDE5MDIzMjgsInJvbGUiOiJST0xFX1VTRVIifQ.APLX1qDrDXYJ8w8t-j1cVQqCQbqklb2lhPtvGf8uq4CotcJtOABF-RrhASB2Nc6KdBI2lpIx24M54Q4RhYqctg");
     }
 
     public static RegisterDataDTO generateRegisterDataDTO(String success, String role) {
@@ -61,12 +63,12 @@ public class ApiTestUtils {
         return new TokenDataDTO("invalidemail@email.com", "invalidtoken", "invalidrefresh");
     }
 
-    public static String generateRefreshedJwtToken() {
-        return "refreshedtoken";
+    public static TokenData generateRefreshedTokenData() {
+        return new TokenData("refreshedtoken", "refreshedtoken");
     }
 
-    public static TokenDataDTO generateTokenDataDTO(String email, String token) {
-        return new TokenDataDTO(email, token, token);
+    public static TokenDataDTO generateTokenDataDTO(String email, String token, String refresh) {
+        return new TokenDataDTO(email, token, refresh);
     }
 
     public static UserDataResponse generateUserDataResponse() {
